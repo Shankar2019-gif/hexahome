@@ -220,14 +220,6 @@ export const locationApi = {
 
 // 3. Properties & Search Engine API
 export const propertyApi = {
-  searchProperties: (params = {}) => apiClient.get('/properties', { params }),
-
-  getFeatured: (city = 'coimbatore', adType = 'RENT', limit = 6) =>
-    apiClient.get('/properties/featured', { params: { city, adType, limit } }),
-
-  getHotDeals: (limit = 6) =>
-    apiClient.get('/properties/hot-deals', { params: { limit } }),
-
   getPropertyDetail: (slugOrId) =>
     apiClient.get(`/properties/${slugOrId}`),
 
