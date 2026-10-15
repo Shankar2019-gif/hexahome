@@ -1,0 +1,657 @@
+/* ==========================================================================
+   HexaHome Account Sidebar Drawer Styles (Pixel-Precise to Reference Design)
+   ========================================================================== */
+
+/* Drawer Backdrop Overlay */
+.account-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.account-sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sliding Drawer Panel */
+.account-sidebar-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 410px;
+  max-width: 92vw;
+  background-color: #ffffff;
+  z-index: 10000;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.16);
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  font-family: inherit;
+}
+
+.account-sidebar-drawer.open {
+  transform: translateX(0);
+}
+
+/* Top Sticky Header */
+.account-sidebar-header {
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.account-sidebar-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.account-sidebar-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e293b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.account-sidebar-close-btn:hover {
+  background-color: #f1f5f9;
+  color: #033487;
+  transform: rotate(90deg);
+}
+
+/* Drawer Scrollable Content Area */
+.account-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 0 28px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Slim Custom Scrollbar */
+.account-sidebar-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.account-sidebar-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.account-sidebar-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.account-sidebar-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   1. User Profile Greeting Section
+   -------------------------------------------------------------------------- */
+.sidebar-user-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 24px 20px 24px;
+}
+
+.sidebar-user-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-avatar-circle {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-avatar-circle.auth {
+  background: linear-gradient(135deg, #033487 0%, #1e40af 100%);
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.sidebar-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-user-greeting {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-user-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-auth-btn {
+  background-color: #003882;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 56, 130, 0.25);
+  transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-auth-btn:hover {
+  background-color: #022b68;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 56, 130, 0.32);
+}
+
+.sidebar-auth-btn:active {
+  transform: translateY(0);
+}
+
+.sidebar-auth-btn.logout {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  box-shadow: none;
+}
+
+.sidebar-auth-btn.logout:hover {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+/* --------------------------------------------------------------------------
+   2. Promotional Banner Card ("Looking to Sell/Rent...")
+   -------------------------------------------------------------------------- */
+.sidebar-promo-card {
+  margin: 0 20px 20px 20px;
+  background: linear-gradient(135deg, #eaf2ff 0%, #f1f7ff 100%);
+  border: 1px solid #cce0ff;
+  border-radius: 16px;
+  padding: 18px 18px 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 56, 130, 0.04);
+}
+
+.sidebar-promo-content {
+  flex: 1;
+  z-index: 2;
+}
+
+.sidebar-promo-heading {
+  font-size: 16px;
+  font-weight: 800;
+  color: #091e42;
+  line-height: 1.28;
+  margin: 0 0 14px 0;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-promo-btn {
+  background-color: #003882;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 56, 130, 0.28);
+  transition: all 0.18s ease;
+}
+
+.sidebar-promo-btn:hover {
+  background-color: #022b68;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 56, 130, 0.35);
+}
+
+.sidebar-promo-illustration {
+  width: 125px;
+  min-width: 125px;
+  height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. Menu Item Rows (Icon + Label + Chevron/Arrow)
+   -------------------------------------------------------------------------- */
+.sidebar-menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.16s ease;
+}
+
+.sidebar-menu-item:hover {
+  background-color: #f8fafc;
+}
+
+.sidebar-menu-item:active {
+  background-color: #f1f5f9;
+}
+
+.sidebar-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sidebar-icon-box {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 12px;
+  background-color: #edf4ff;
+  border: 1px solid #dbeafe;
+  color: #003882;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.16s ease, background-color 0.16s ease;
+}
+
+.sidebar-menu-item:hover .sidebar-icon-box {
+  background-color: #e2edff;
+  transform: scale(1.04);
+}
+
+.sidebar-item-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.sidebar-item-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.sidebar-menu-item:hover .sidebar-item-right {
+  color: #003882;
+  transform: translateX(2px);
+}
+
+.sidebar-item-right.external {
+  color: #111827;
+}
+
+.sidebar-menu-item:hover .sidebar-item-right.external {
+  transform: translate(2px, -2px);
+}
+
+/* Submenu Accordion Container */
+.sidebar-accordion-body {
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-sub-link {
+  padding: 9px 24px 9px 82px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.sidebar-sub-link:hover {
+  color: #003882;
+  background-color: #eff6ff;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   4. App Download Box
+   -------------------------------------------------------------------------- */
+.sidebar-app-box {
+  margin: 22px 20px 14px 20px;
+  background: #f1f5f9;
+  border-radius: 14px;
+  padding: 16px 16px 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sidebar-app-left {
+  flex: 1;
+}
+
+.sidebar-app-heading {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+  margin: 0 0 12px 0;
+}
+
+.sidebar-store-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-store-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: 142px;
+  transition: opacity 0.18s ease;
+}
+
+.sidebar-store-pill:hover {
+  opacity: 0.88;
+}
+
+.sidebar-store-pill-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.sidebar-store-pill-sub {
+  font-size: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #cbd5e1;
+}
+
+.sidebar-store-pill-main {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sidebar-qr-wrap {
+  width: 82px;
+  height: 82px;
+  min-width: 82px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   5. Social Media Footer
+   -------------------------------------------------------------------------- */
+.sidebar-social-section {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 10px;
+}
+
+.sidebar-social-heading {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.sidebar-social-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-social-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.sidebar-social-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  opacity: 0.92;
+}
+
+.sidebar-social-btn.fb { background-color: #1877f2; }
+.sidebar-social-btn.x  { background-color: #0f172a; }
+.sidebar-social-btn.in { background-color: #0a66c2; }
+.sidebar-social-btn.ig {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
+/* --------------------------------------------------------------------------
+   6. SKELETON LOADING STATE (Animated Shimmer)
+   -------------------------------------------------------------------------- */
+@keyframes sidebarShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 40%,
+    #cbd5e1 50%,
+    #e2e8f0 60%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: sidebarShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.skeleton-avatar {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 50%;
+}
+
+.skeleton-text-lg {
+  height: 18px;
+  width: 140px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.skeleton-text-sm {
+  height: 13px;
+  width: 180px;
+  border-radius: 4px;
+}
+
+.skeleton-btn-sm {
+  width: 96px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.skeleton-banner-card {
+  height: 110px;
+  margin: 0 20px 20px 20px;
+  border-radius: 16px;
+}
+
+.skeleton-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+.skeleton-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.skeleton-item-text {
+  height: 16px;
+  width: 120px;
+  border-radius: 5px;
+}
+
+.skeleton-app-card {
+  height: 100px;
+  margin: 20px 20px 14px 20px;
+  border-radius: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .account-sidebar-drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .account-sidebar-header {
+    padding: 0 18px;
+  }
+
+  .sidebar-user-section {
+    padding: 8px 18px 16px 18px;
+  }
+
+  .sidebar-promo-card {
+    margin: 0 16px 16px 16px;
+    padding: 14px;
+  }
+
+  .sidebar-promo-illustration {
+    width: 95px;
+    min-width: 95px;
+    height: 85px;
+  }
+
+  .sidebar-menu-item {
+    padding: 10px 18px;
+  }
+
+  .sidebar-app-box {
+    margin: 16px 16px 12px 16px;
+    padding: 14px;
+  }
+
+  .sidebar-social-section {
+    padding: 14px 18px 20px 18px;
+  }
+}

@@ -27,10 +27,13 @@ import {
   Info,
   FileText,
   Smartphone,
-  Activity
+  Activity,
+  Crown,
+  Headphones
 } from 'lucide-react';
 import { CITIES } from '../data/hexahomeData';
 import CustomDropdown from './CustomDropdown';
+import AccountSidebarDrawer from './AccountSidebarDrawer';
 
 export default function Header({ 
   selectedCity, 
@@ -44,6 +47,7 @@ export default function Header({
   onLogout 
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accountDrawerOpen, setAccountDrawerOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null); // 'city' | 'buyers' | 'tenants' | 'owners'
   const [isScrolled, setIsScrolled] = useState(false);
   const [stickyPropertyType, setStickyPropertyType] = useState('Residential Rent');
@@ -53,7 +57,7 @@ export default function Header({
   // 'findProperties' | 'buyers' | 'tenants' | 'owners' | 'pricings' | 'login' | 'profile' | 'stickyType' | 'exploreScrolled' | null
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Active top-level modal: 'activity' | 'about' | 'terms' | null
+  // Active top-level modal: 'activity' | 'about' | 'terms' | 'faq' | 'experts' | 'comparePlans' | null
   const [activeModal, setActiveModal] = useState(null);
 
   // Search filter for cities in custom city dropdown
@@ -1315,22 +1319,32 @@ export default function Header({
               </CustomDropdown>
             )}
 
-            {/* Mobile Hamburger Menu Icon */}
+            {/* Three-Line Menu Button (Visible on Desktop & Mobile, Beside Login) */}
             <button 
               type="button" 
-              className="nav-hamburger-btn p-1.5 rounded-lg text-white sm:hidden cursor-pointer"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation menu"
+              className={`nav-hamburger-btn flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition cursor-pointer select-none ${
+                isScrolled 
+                  ? 'text-[#033487] hover:bg-gray-100 active:scale-95' 
+                  : 'text-white hover:bg-white/15 active:scale-95'
+              }`}
+              onClick={() => setAccountDrawerOpen(true)}
+              aria-label="Open Account & Navigation Sidebar"
+              title="Menu & Account"
             >
-              {mobileMenuOpen ? (
-                <X size={24} color={isScrolled ? "#1f2937" : "#ffffff"} />
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={isScrolled ? "#1f2937" : "#ffffff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-              )}
+              <svg 
+                width="22" 
+                height="22" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.3" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <line x1="3.5" y1="6" x2="20.5" y2="6"></line>
+                <line x1="3.5" y1="12" x2="20.5" y2="12"></line>
+                <line x1="3.5" y1="18" x2="20.5" y2="18"></line>
+              </svg>
             </button>
           </div>
         </div>
@@ -1810,6 +1824,247 @@ export default function Header({
           </div>
         </div>
       )}
+
+      {/* ========================================================
+          COMPARE PLANS MODAL
+         ======================================================== */}
+      {activeModal === 'comparePlans' && (
+        <div className="modal-backdrop animate-fade-in" onClick={() => setActiveModal(null)} style={{ zIndex: 9999 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '680px', borderRadius: '24px' }}>
+            <button type="button" className="modal-close-btn" onClick={() => setActiveModal(null)}>
+              <X size={20} />
+            </button>
+
+            <div className="modal-header" style={{ textAlign: 'left', marginBottom: '20px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '20px', background: '#eff6ff', color: '#033487', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                <Crown size={14} />
+                <span>Zero Brokerage Upgrades</span>
+              </div>
+              <h2 className="modal-title" style={{ fontSize: '22px', fontWeight: '800', color: '#033487', margin: '0 0 6px 0' }}>
+                Compare HexaHome Plans
+              </h2>
+              <p className="modal-subtitle" style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+                Transparent pricing with guaranteed owner connects and maximum property visibility.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+              {/* Plan 1 */}
+              <div className="p-4 rounded-2xl border border-gray-200 bg-white flex flex-col justify-between hover:border-[#033487] transition shadow-sm">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Free Tier</span>
+                  <div className="text-xl font-extrabold text-[#0f172a] mt-1">₹0</div>
+                  <p className="text-[12px] text-gray-500 mt-1">Basic discovery for home searchers</p>
+                  <ul className="mt-4 space-y-2 text-xs text-gray-600">
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Free 1 property post</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Search verified homes</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Direct chat with owners</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (onNavigate) onNavigate('/search');
+                  }}
+                  className="mt-5 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition cursor-pointer"
+                >
+                  Current Plan
+                </button>
+              </div>
+
+              {/* Plan 2: Pro Owner */}
+              <div className="p-4 rounded-2xl border-2 border-[#033487] bg-blue-50/40 flex flex-col justify-between relative shadow-md">
+                <span className="absolute -top-3 right-4 bg-[#033487] text-white text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">
+                  Popular
+                </span>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#033487]">Owner Pro</span>
+                  <div className="text-xl font-extrabold text-[#033487] mt-1">₹999 <span className="text-xs font-normal text-gray-500">/mo</span></div>
+                  <p className="text-[12px] text-gray-500 mt-1">Sell or rent your home 3x faster</p>
+                  <ul className="mt-4 space-y-2 text-xs text-gray-700 font-medium">
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Featured Homepage Placement</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Verified Tenant Lead alerts</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Automated Rent Agreement</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Professional photo tag</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (onNavigate) onNavigate('/post-property');
+                    else onOpenPostModal();
+                  }}
+                  className="mt-5 w-full py-2 bg-[#033487] hover:bg-[#022c70] text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer"
+                >
+                  Upgrade to Pro
+                </button>
+              </div>
+
+              {/* Plan 3: Tenant VIP */}
+              <div className="p-4 rounded-2xl border border-gray-200 bg-white flex flex-col justify-between hover:border-[#033487] transition shadow-sm">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700">Buyer / Tenant VIP</span>
+                  <div className="text-xl font-extrabold text-[#0f172a] mt-1">₹499 <span className="text-xs font-normal text-gray-500">/mo</span></div>
+                  <p className="text-[12px] text-gray-500 mt-1">Instant contact unlock with owners</p>
+                  <ul className="mt-4 space-y-2 text-xs text-gray-600">
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> 25 Verified Owner Unlocks</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Instant WhatsApp alert on new listings</li>
+                    <li className="flex items-center gap-1.5"><Check size={14} className="text-emerald-600 shrink-0" /> Dedicated RM Assistance</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (onNavigate) onNavigate('/search');
+                  }}
+                  className="mt-5 w-full py-2 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl transition cursor-pointer"
+                >
+                  Get VIP Pass
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          TALK TO OUR EXPERTS MODAL
+         ======================================================== */}
+      {activeModal === 'experts' && (
+        <div className="modal-backdrop animate-fade-in" onClick={() => setActiveModal(null)} style={{ zIndex: 9999 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px', borderRadius: '24px' }}>
+            <button type="button" className="modal-close-btn" onClick={() => setActiveModal(null)}>
+              <X size={20} />
+            </button>
+
+            <div className="modal-header" style={{ textAlign: 'left', marginBottom: '16px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '20px', background: '#eff6ff', color: '#033487', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                <Headphones size={14} />
+                <span>Free Dedicated Advisory</span>
+              </div>
+              <h2 className="modal-title" style={{ fontSize: '22px', fontWeight: '800', color: '#033487', margin: '0 0 6px 0' }}>
+                Talk to Our Property Experts
+              </h2>
+              <p className="modal-subtitle" style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+                Need help finding the right apartment, price negotiation, or legal verification?
+              </p>
+            </div>
+
+            <div className="space-y-3.5 text-left text-xs">
+              <div className="p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#033487] text-white flex items-center justify-center shrink-0">
+                  <Phone size={18} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold text-gray-500">Toll Free Consultation</div>
+                  <div className="text-sm font-bold text-[#033487]">1800-120-HEXA (4392)</div>
+                  <div className="text-[10.5px] text-gray-500">Mon - Sat: 9:00 AM to 8:00 PM</div>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                  <Mail size={18} />
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold text-gray-500">Email Advisory Team</div>
+                  <div className="text-sm font-bold text-emerald-800">advisory@hexahome.in</div>
+                  <div className="text-[10.5px] text-gray-500">Guaranteed response within 2 business hours</div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = 'tel:18001204392';
+                }}
+                className="w-full py-3 bg-[#003882] hover:bg-[#022c70] text-white font-bold text-sm rounded-xl transition shadow-md cursor-pointer text-center mt-2"
+              >
+                Call Advisory Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          FREQUENTLY ASKED QUESTIONS (FAQ) MODAL
+         ======================================================== */}
+      {activeModal === 'faq' && (
+        <div className="modal-backdrop animate-fade-in" onClick={() => setActiveModal(null)} style={{ zIndex: 9999 }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', borderRadius: '24px' }}>
+            <button type="button" className="modal-close-btn" onClick={() => setActiveModal(null)}>
+              <X size={20} />
+            </button>
+
+            <div className="modal-header" style={{ textAlign: 'left', marginBottom: '18px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '20px', background: '#eff6ff', color: '#033487', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+                <Info size={14} />
+                <span>Help & Knowledge Center</span>
+              </div>
+              <h2 className="modal-title" style={{ fontSize: '22px', fontWeight: '800', color: '#033487', margin: '0 0 6px 0' }}>
+                Frequently Asked Questions
+              </h2>
+              <p className="modal-subtitle" style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+                Everything you need to know about searching, posting, and renting on HexaHome.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 text-left text-xs max-h-[55vh] overflow-y-auto pr-1">
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="font-bold text-gray-900 text-xs mb-1">Is HexaHome really 100% zero brokerage?</div>
+                <div className="text-gray-600 leading-relaxed text-[11.5px]">
+                  Yes. We connect buyers/tenants directly with verified owners and builder properties. Neither side pays brokerage to HexaHome.
+                </div>
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="font-bold text-gray-900 text-xs mb-1">How can I post my property for free?</div>
+                <div className="text-gray-600 leading-relaxed text-[11.5px]">
+                  Click the "Post Property for Free" button in the header or sidebar drawer, fill in basic details and photos, and submit. Your listing is verified and activated quickly.
+                </div>
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="font-bold text-gray-900 text-xs mb-1">How do I contact a property owner?</div>
+                <div className="text-gray-600 leading-relaxed text-[11.5px]">
+                  Open any verified property page, click "Contact Owner", and verify your phone number to immediately reveal the owner's direct mobile number.
+                </div>
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="font-bold text-gray-900 text-xs mb-1">Are all listings verified?</div>
+                <div className="text-gray-600 leading-relaxed text-[11.5px]">
+                  Our administration moderation team verifies property details, geolocation coordinates, and owner identity before marking listings as ACTIVE on the platform.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          ACCOUNT SIDEBAR DRAWER (Pixel-Precise to Reference Images)
+         ======================================================== */}
+      <AccountSidebarDrawer
+        isOpen={accountDrawerOpen}
+        onClose={() => setAccountDrawerOpen(false)}
+        currentUser={user}
+        onNavigate={onNavigate}
+        onOpenLoginModal={onOpenLoginModal}
+        onOpenPostModal={onOpenPostModal}
+        onOpenAppModal={onOpenAppModal}
+        onLogout={handleLogoutClick}
+        onOpenActivityModal={() => setActiveModal('activity')}
+        onOpenAboutModal={() => setActiveModal('about')}
+        onOpenTermsModal={() => setActiveModal('terms')}
+        onOpenFaqModal={() => setActiveModal('faq')}
+        onOpenExpertsModal={() => setActiveModal('experts')}
+        onOpenComparePlansModal={() => setActiveModal('comparePlans')}
+      />
     </header>
   );
 }
