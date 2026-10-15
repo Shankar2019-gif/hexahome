@@ -979,7 +979,7 @@ export default function Header({
                 onOpenChange={(open) => setActiveDropdown(open ? 'profile' : null)}
                 hoverable={false}
                 align="right"
-                width={300}
+                width={280}
                 offset={8}
                 trigger={({ isOpen }) => (
                   <div 
@@ -1017,188 +1017,60 @@ export default function Header({
                 )}
               >
                 {({ close }) => (
-                  <div className="p-3 bg-white text-gray-800 rounded-2xl shadow-xl flex flex-col">
-                    {/* 1. User Profile Header Card */}
-                    <div className="flex items-center gap-3 pb-3 border-b border-gray-100 bg-blue-50/50 p-2.5 rounded-xl mb-2">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr from-[#0284c7] to-[#033487] text-white flex items-center justify-center text-sm font-bold shrink-0 ring-2 ring-blue-200 shadow-sm">
+                  <div className="p-3.5 bg-white text-gray-800 rounded-2xl shadow-2xl border border-gray-100 flex flex-col select-none">
+                    {/* 1. User Profile Information Card */}
+                    <div className="flex items-center gap-3 pb-3 border-b border-gray-100 bg-blue-50/60 p-3 rounded-xl mb-3">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-tr from-[#0284c7] to-[#033487] text-white flex items-center justify-center text-sm font-bold shrink-0 ring-2 ring-blue-200 shadow-sm">
                         {user.profilePicUrl ? (
                           <img src={user.profilePicUrl} alt={displayName} className="w-full h-full object-cover" />
                         ) : (
                           <span>{getInitials(displayName)}</span>
                         )}
                       </div>
-                      <div className="overflow-hidden flex-1">
-                        <div className="font-bold text-sm text-[#033487] truncate flex items-center gap-1">
+                      <div className="overflow-hidden flex-1 min-w-0">
+                        <div className="font-bold text-sm text-[#033487] truncate flex items-center gap-1.5">
                           <span className="truncate">{displayName}</span>
-                          <CheckCircle size={13} className="text-emerald-500 shrink-0" />
+                          <CheckCircle size={14} className="text-emerald-500 shrink-0" />
                         </div>
                         {user.phone && (
-                          <div className="text-[11px] text-gray-500 truncate font-medium flex items-center gap-1 mt-0.5">
-                            <Phone size={10} className="text-gray-400" />
+                          <div className="text-[12px] text-gray-700 font-semibold flex items-center gap-1.5 mt-0.5 whitespace-nowrap">
+                            <Phone size={11} className="text-gray-400 shrink-0" />
                             <span>+91 {user.phone}</span>
-                            <span className="text-emerald-600 font-bold text-[10px]">✓</span>
+                            <span className="text-emerald-600 font-bold text-[11px]">✓</span>
                           </div>
                         )}
                         {user.email && (
-                          <div className="text-[10.5px] text-gray-400 truncate font-normal flex items-center gap-1">
-                            <Mail size={10} className="text-gray-300" />
+                          <div className="text-[11px] text-gray-400 truncate font-normal flex items-center gap-1 mt-0.5">
+                            <Mail size={11} className="text-gray-400 shrink-0" />
                             <span className="truncate">{user.email}</span>
                           </div>
                         )}
-                        <div className="mt-1">
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue-100/80 text-[#033487] border border-blue-200">
+                        <div className="mt-1.5">
+                          <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue-100/90 text-[#033487] border border-blue-200">
                             {getRoleLabel(user.roles || user.role)}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Exact Specified Dropdown Menu Options */}
-                    <div className="flex flex-col gap-1 py-1 text-xs">
-                      {/* 0. My Dashboard */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          if (onNavigate) onNavigate('/dashboard');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg bg-blue-50/70 hover:bg-blue-100/70 text-[#033487] text-left transition font-bold cursor-pointer"
-                      >
-                        <Activity size={15} className="text-[#033487] shrink-0" />
-                        <span>My Dashboard</span>
-                      </button>
-
-                      {/* 1. My Listings */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          if (onNavigate) onNavigate('/dashboard?tab=listings');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Building size={15} className="text-[#033487] shrink-0" />
-                        <span>My Listings</span>
-                      </button>
-
-                      {/* 2. Inquiries & Leads */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          if (onNavigate) onNavigate('/dashboard?tab=inquiries');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Phone size={15} className="text-[#033487] shrink-0" />
-                        <span>Inquiries & Leads</span>
-                      </button>
-
-                      {/* 3. Saved Properties */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          if (onNavigate) onNavigate('/dashboard?tab=saved');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Sparkles size={15} className="text-[#033487] shrink-0" />
-                        <span>Saved Properties</span>
-                      </button>
-
-                      {/* 4. My Activity */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          setActiveModal('activity');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Clock size={15} className="text-[#033487] shrink-0" />
-                        <span>Activity Summary</span>
-                      </button>
-
-                      {/* 2. Post Property [FREE] */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          if (onNavigate) onNavigate('/post-property');
-                          else onOpenPostModal();
-                        }}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 text-gray-800 hover:text-[#033487] text-left transition font-semibold cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <PlusCircle size={15} className="text-[#033487] shrink-0" />
-                          <span>Post Property</span>
-                        </div>
-                        <span className="bg-[#15770b] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                          FREE
-                        </span>
-                      </button>
-
-                      {/* 3. About Us */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          setActiveModal('about');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Info size={15} className="text-[#033487] shrink-0" />
-                        <span>About Us</span>
-                      </button>
-
-                      {/* 4. Terms & Condition */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          setActiveModal('terms');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <FileText size={15} className="text-[#033487] shrink-0" />
-                        <span>Terms & Condition</span>
-                      </button>
-
-                      {/* 5. Download App */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          onOpenAppModal();
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-[#033487] text-left transition font-medium cursor-pointer"
-                      >
-                        <Smartphone size={15} className="text-[#033487] shrink-0" />
-                        <span>Download App</span>
-                      </button>
-                    </div>
-
-                    {/* 6. LOGOUT BUTTON - Sticky Solid Red Button (Always in View) */}
-                    <div className="sticky bottom-0 bg-white pt-2.5 pb-1 border-t border-gray-100 mt-2 z-10">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close();
-                          handleLogoutClick();
-                        }}
-                        style={{
-                          backgroundColor: '#dc2626',
-                          color: '#ffffff',
-                          border: 'none',
-                          boxShadow: '0 4px 14px rgba(220, 38, 38, 0.45)'
-                        }}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-xs font-bold hover:bg-red-700 active:scale-[0.98] transition cursor-pointer"
-                      >
-                        <LogOut size={16} className="text-white shrink-0" />
-                        <span>Logout</span>
-                      </button>
-                    </div>
+                    {/* 2. ONLY Logout Button (All navigation items are now in the Account Sidebar Drawer) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        close();
+                        handleLogoutClick();
+                      }}
+                      style={{
+                        backgroundColor: '#dc2626',
+                        color: '#ffffff',
+                        border: 'none',
+                        boxShadow: '0 3px 10px rgba(220, 38, 38, 0.35)'
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-xs font-bold hover:bg-red-700 active:scale-[0.98] transition cursor-pointer"
+                    >
+                      <LogOut size={16} className="text-white shrink-0" />
+                      <span>Logout</span>
+                    </button>
                   </div>
                 )}
               </CustomDropdown>
