@@ -1,0 +1,726 @@
+openapi: 3.0.3
+info:
+  title: HexaHome Real Estate Platform API
+  description: HexaHome high-performance real estate portal API specification. Backed by Spring Boot 3, PostgreSQL PostGIS, and Redis.
+  version: 1.0.0
+servers:
+  - url: https://api.hexahome.in
+    description: Production Server
+  - url: http://localhost:8080
+    description: Local Dev Server
+
+tags:
+  - name: Auth
+    description: Passwordless OTP Authentication and JWT token management
+  - name: User
+    description: User profile, preferences, wishlist, and saved search alerts
+  - name: Property Discovery
+    description: Public search, filtering, geo-radius queries, and property details
+  - name: Property Management
+    description: Owner CRUD, media uploads, listing verification and renewals
+  - name: Leads & Contacts
+    description: Contact owner, view phone numbers with quota deduction, lead management
+  - name: Plans & Subscriptions
+    description: Monetization plans, payment orders, webhooks, and invoices
+  - name: Tools & CMS
+    description: Real estate calculators, rate trends, circle rates, and legal generators
+
+paths:
+  /api/auth/send-otp:
+    post:
+      tags: [Auth]
+      summary: Send 6-digit OTP to user mobile phone
+      operationId: sendOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendOtpRequest'
+      responses:
+        '200':
+          description: OTP dispatched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOtpResponse'
+        '400':
+          description: Invalid phone format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+
+  /api/auth/verify-otp/:
+    post:
+      tags: [Auth]
+      summary: Verify OTP and issue JWT access and refresh tokens
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid OTP or attempts exceeded
+
+  /api/auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Exchange refresh token for new access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  /v1/user/profile:
+    get:
+      tags: [User]
+      summary: Get current authenticated user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      tags: [User]
+      summary: Update profile details
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated
+
+  /v1/property/search:
+    get:
+      tags: [Property Discovery]
+      summary: Search properties with multi-facet filters and geo-radius
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Coimbatore
+        - name: adType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [rent, sale, plot, pg]
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: bhk
+          in: query
+          schema:
+            type: string
+            example: 2BHK,3BHK
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: minArea
+          in: query
+          schema:
+            type: number
+        - name: maxArea
+          in: query
+          schema:
+            type: number
+        - name: furnishing
+          in: query
+          schema:
+            type: string
+            enum: [fully_furnished, semi_furnished, unfurnished]
+        - name: preferredTenant
+          in: query
+          schema:
+            type: string
+            enum: [family, bachelor, any]
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lng
+          in: query
+          schema:
+            type: number
+        - name: radiusKm
+          in: query
+          schema:
+            type: number
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [relevance, price_asc, price_desc, date_desc]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertySearchResponse'
+
+  /v1/property/{slugOrShortId}:
+    get:
+      tags: [Property Discovery]
+      summary: Fetch single property details
+      parameters:
+        - name: slugOrShortId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: XAT594
+      responses:
+        '200':
+          description: Property detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+
+  /v1/property:
+    post:
+      tags: [Property Management]
+      summary: Create new property listing
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyRequest'
+      responses:
+        '201':
+          description: Property created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePropertyResponse'
+
+  /v1/property/{id}:
+    put:
+      tags: [Property Management]
+      summary: Update existing property listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyRequest'
+      responses:
+        '200':
+          description: Property updated
+    delete:
+      tags: [Property Management]
+      summary: Delete or unpublish listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Property deleted
+
+  /v1/property/{id}/view-number:
+    post:
+      tags: [Leads & Contacts]
+      summary: View owner phone number and deduct user credit quota
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact revealed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewNumberResponse'
+        '402':
+          description: Quota exhausted
+
+  /v1/upload-signed-url/property:
+    post:
+      tags: [Property Management]
+      summary: Get presigned S3 upload URL for property photos
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadSignedUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadSignedUrlResponse'
+
+  /v1/plans:
+    get:
+      tags: [Plans & Subscriptions]
+      summary: Get list of active subscription plans
+      parameters:
+        - name: role
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [tenant, buyer, seller, landlord, agent, pg_owner]
+      responses:
+        '200':
+          description: Plans list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanItem'
+
+  /v1/subscriptions/create-order:
+    post:
+      tags: [Plans & Subscriptions]
+      summary: Create payment order for subscription
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planId, gateway]
+              properties:
+                planId:
+                  type: string
+                gateway:
+                  type: string
+                  enum: [RAZORPAY, CASHFREE]
+      responses:
+        '200':
+          description: Payment order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrderResponse'
+
+  /v1/property/rate-trends:
+    get:
+      tags: [Tools & CMS]
+      summary: Get historical price trends per sq.ft
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: locality
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rate trends dataset
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SendOtpRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          pattern: '^[6-9][0-9]{9}$'
+          example: '9876543210'
+
+    SendOtpResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        expiresInSeconds:
+          type: integer
+          example: 300
+
+    VerifyOtpRequest:
+      type: object
+      required: [phone, otp, role]
+      properties:
+        phone:
+          type: string
+          example: '9876543210'
+        otp:
+          type: string
+          pattern: '^[0-9]{6}$'
+          example: '458921'
+        role:
+          type: string
+          enum: [TENANT, BUYER, OWNER, LANDLORD, AGENT, PG_OWNER, PG_SEEKER]
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: 'Bearer'
+        expiresIn:
+          type: integer
+          example: 900
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: 'Bearer'
+        expiresIn:
+          type: integer
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'usr_98a72b11'
+        phone:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        isVerified:
+          type: boolean
+        profilePicUrl:
+          type: string
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+
+    PropertySearchResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertySummary'
+
+    PropertySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        shortId:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        adType:
+          type: string
+        propertyType:
+          type: string
+        price:
+          type: number
+        deposit:
+          type: number
+        bhk:
+          type: string
+        baths:
+          type: integer
+        builtUpArea:
+          type: number
+        furnishing:
+          type: string
+        locality:
+          type: string
+        city:
+          type: string
+        isVerified:
+          type: boolean
+        isZeroBrokerage:
+          type: boolean
+        coverImage:
+          type: string
+        imagesCount:
+          type: integer
+        coordinates:
+          type: object
+          properties:
+            lat:
+              type: number
+            lng:
+              type: number
+
+    PropertyDetail:
+      allOf:
+        - $ref: '#/components/schemas/PropertySummary'
+        - type: object
+          properties:
+            description:
+              type: string
+            maintenanceCharges:
+              type: number
+            availableFrom:
+              type: string
+            facing:
+              type: string
+            floorNumber:
+              type: integer
+            totalFloors:
+              type: integer
+            amenities:
+              type: array
+              items:
+                type: string
+            images:
+              type: array
+              items:
+                type: string
+            owner:
+              type: object
+              properties:
+                name:
+                  type: string
+                userType:
+                  type: string
+                isVerified:
+                  type: boolean
+
+    CreatePropertyRequest:
+      type: object
+      required: [adType, propertyType, city, locality, price, builtUpArea]
+      properties:
+        adType:
+          type: string
+        propertyType:
+          type: string
+        city:
+          type: string
+        locality:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        bhk:
+          type: string
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        builtUpArea:
+          type: number
+        price:
+          type: number
+        deposit:
+          type: number
+        furnishing:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    CreatePropertyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        shortId:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+
+    UploadSignedUrlRequest:
+      type: object
+      required: [fileName, contentType, fileSizeBytes]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        fileSizeBytes:
+          type: integer
+
+    UploadSignedUrlResponse:
+      type: object
+      properties:
+        uploadUrl:
+          type: string
+        fileKey:
+          type: string
+        publicWebpUrl:
+          type: string
+
+    ViewNumberResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        ownerPhone:
+          type: string
+        ownerName:
+          type: string
+        remainingCredits:
+          type: integer
+
+    PlanItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        priceInr:
+          type: number
+        credits:
+          type: integer
+        validityDays:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+
+    PaymentOrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        amount:
+          type: integer
+        currency:
+          type: string
+        key:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string

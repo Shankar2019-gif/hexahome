@@ -1,0 +1,40 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:hexahome_db}}
+    username: ${POSTGRES_USER:hexahome_user}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 25
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    clean-disabled: true
+
+hexahome:
+  cors:
+    allowed-origins:
+      - ${CORS_ALLOWED_ORIGIN:https://www.hexahome.in}
+  jwt:
+    secret: ${JWT_SECRET}
+    access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  aws:
+    region: ${AWS_REGION:ap-south-1}
+    s3-bucket: ${AWS_S3_BUCKET_NAME:}
+    access-key-id: ${AWS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+    cloudfront-domain: ${CLOUDFRONT_DOMAIN:}
+
+logging:
+  level:
+    root: INFO
+    com.hexahome: INFO
+    org.springframework.web: WARN

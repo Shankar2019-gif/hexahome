@@ -1,0 +1,106 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: hexahome-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:hexahome_redis_secret}
+      timeout: 2000ms
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:8085"
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+              - "http://localhost:80"
+              - "http://localhost"
+              - "https://www.hexahome.in"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+      routes:
+        # 1. Auth Service Routes
+        - id: auth-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**, /api/admin/auth/**
+
+        # 2. Property & Catalog Routes
+        - id: property-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/properties/**, /api/v1/projects/**, /api/v1/cities/**
+
+        # 3. Leads & Engagement Routes
+        - id: lead-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/leads/**, /api/v1/reports/**
+
+        # 4. Billing & Subscription Routes
+        - id: billing-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/subscriptions/**, /api/v1/plans/**
+
+        # 5. Admin Backoffice Routes
+        - id: admin-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/admin/**
+
+        # 6. Static / Media Uploads Proxy
+        - id: uploads-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/uploads/**
+
+        # 7. Swagger / OpenAPI Documentation
+        - id: swagger-service-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/swagger-ui/**, /swagger-ui.html, /v3/api-docs/**, /api-docs/**
+
+        # 8. General / Fallback REST API Route
+        - id: default-api-route
+          uri: ${BACKEND_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+hexahome:
+  jwt:
+    secret: ${JWT_SECRET}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO
+    com.hexahome.gateway: DEBUG

@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: hexahome-backend
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 45MB
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 25
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8081}
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+hexahome:
+  cors:
+    allowed-origins:
+      - "http://localhost:8085"
+      - "http://localhost:5173"
+      - "http://localhost:3000"
+      - "https://www.hexahome.in"
+  jwt:
+    secret: ${JWT_SECRET}
+    access-expiration-ms: 900000 # 15 minutes
+    refresh-expiration-ms: 604800000 # 7 days
+  aws:
+    region: ${AWS_REGION:ap-south-1}
+    s3-bucket: ${AWS_S3_BUCKET_NAME:}
+    access-key-id: ${AWS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+    cloudfront-domain: ${CLOUDFRONT_DOMAIN:}
+  storage:
+    local-dir: ${LOCAL_STORAGE_DIR:uploads}
+    base-url: ${STORAGE_BASE_URL:http://localhost:8081/uploads}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:rzp_test_Tnhdqxkz85pAVO}
+  key-secret: ${RAZORPAY_KEY_SECRET:I7gB5W1CHl358SPjZyA3SMVp}
+  webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:hexahome_rzp_webhook_secret_2025}
+
+aws:
+  region: ${AWS_REGION:ap-south-1}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  cloudfront-domain: ${CLOUDFRONT_DOMAIN:}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:}
+
+
+

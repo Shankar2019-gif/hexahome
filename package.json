@@ -1,24 +1,24 @@
 {
-  "name": "hexahome",
+  "name": "hexahome-project",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "description": "HexaHome Fullstack Real Estate Platform (Frontend & Backend)",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "lucide-react": "^1.52.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
-    "vite": "^8.3.0"
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:lint": "npm --prefix frontend run lint",
+    "frontend:preview": "npm --prefix frontend run preview",
+    "backend:build": "cd backend && mvn clean package -DskipTests",
+    "backend:test": "cd backend && mvn test",
+    "gateway:build": "cd gateway && mvn clean package -DskipTests",
+    "gateway:test": "cd gateway && mvn test",
+    "gateway:dev": "cd gateway && mvn spring-boot:run",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   }
 }
