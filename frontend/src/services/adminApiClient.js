@@ -12,7 +12,9 @@ import axios from 'axios';
 // 4. Standard ApiResponse data unwrapping
 // ============================================================================
 
-const ADMIN_API_BASE = '/api/admin';
+const ADMIN_API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/admin`
+  : '/api/admin';
 
 export const ADMIN_TOKEN_KEY = 'hexahome_admin_token';
 export const ADMIN_REFRESH_TOKEN_KEY = 'hexahome_admin_refresh_token';

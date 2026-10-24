@@ -11,7 +11,7 @@ servers:
 
 tags:
   - name: Auth
-    description: Passwordless OTP Authentication and JWT token management
+    description: User Authentication and JWT token management
   - name: User
     description: User profile, preferences, wishlist, and saved search alerts
   - name: Property Discovery
@@ -26,53 +26,49 @@ tags:
     description: Real estate calculators, rate trends, circle rates, and legal generators
 
 paths:
-  /api/auth/send-otp:
+  /api/v1/auth/login:
     post:
       tags: [Auth]
-      summary: Send 6-digit OTP to user mobile phone
-      operationId: sendOtp
+      summary: Login with username, email, or mobile number and password
+      operationId: login
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendOtpRequest'
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: OTP dispatched successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendOtpResponse'
-        '400':
-          description: Invalid phone format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
-          description: Rate limit exceeded
-
-  /api/auth/verify-otp/:
-    post:
-      tags: [Auth]
-      summary: Verify OTP and issue JWT access and refresh tokens
-      operationId: verifyOtp
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VerifyOtpRequest'
-      responses:
-        '200':
-          description: Authentication successful
+          description: Logged in successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid credentials
         '401':
-          description: Invalid OTP or attempts exceeded
+          description: Unauthorized
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new user account
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error or account exists
 
   /api/auth/refresh-token:
     post:
@@ -404,40 +400,45 @@ components:
       bearerFormat: JWT
 
   schemas:
-    SendOtpRequest:
+    LoginRequest:
       type: object
-      required: [phone]
+      required: [username, password]
       properties:
+        username:
+          type: string
+          description: Username, email, or 10-digit mobile number
+          example: '9876543210'
+        password:
+          type: string
+          format: password
+          example: 'Password@123'
+
+    RegisterRequest:
+      type: object
+      required: [firstName, lastName, phone, password]
+      properties:
+        firstName:
+          type: string
+          example: 'Rahul'
+        lastName:
+          type: string
+          example: 'Sharma'
+        email:
+          type: string
+          format: email
+          example: 'rahul@example.com'
         phone:
           type: string
           pattern: '^[6-9][0-9]{9}$'
           example: '9876543210'
-
-    SendOtpResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        message:
+        password:
           type: string
-        expiresInSeconds:
-          type: integer
-          example: 300
-
-    VerifyOtpRequest:
-      type: object
-      required: [phone, otp, role]
-      properties:
-        phone:
-          type: string
-          example: '9876543210'
-        otp:
-          type: string
-          pattern: '^[0-9]{6}$'
-          example: '458921'
+          format: password
+          example: 'Password@123'
         role:
           type: string
-          enum: [TENANT, BUYER, OWNER, LANDLORD, AGENT, PG_OWNER, PG_SEEKER]
+          enum: [TENANT, BUYER, OWNER, LANDLORD, AGENT, BUILDER, PG_OWNER, PG_SEEKER]
+          default: TENANT
 
     AuthResponse:
       type: object

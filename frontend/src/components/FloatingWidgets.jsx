@@ -8,6 +8,10 @@ export default function FloatingWidgets({ currentPath = '/', onNavigate }) {
 
   // Monitor scroll position to reveal the left-side Up Arrow
   useEffect(() => {
+    if (currentPath.startsWith('/admin')) {
+      return;
+    }
+
     const handleScroll = () => {
       // Show when scrolled down past 220px
       if (window.scrollY > 220) {
@@ -23,7 +27,12 @@ export default function FloatingWidgets({ currentPath = '/', onNavigate }) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [currentPath]);
+
+  // Never render customer floating widgets inside admin console
+  if (currentPath.startsWith('/admin')) {
+    return null;
+  }
 
   // Handle clicking the Up Arrow: scroll smoothly to top and navigate home
   const handleScrollToHome = () => {

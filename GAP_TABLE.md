@@ -8,7 +8,7 @@ Comparison between Reference Architecture ([SITEMAP.md](./SITEMAP.md) & [API_SPE
 - **Current State**: A client-side Single Page Application (SPA) built with Vite, React 19, JavaScript (`.jsx`), and static mock data (`src/data/hexahomeData.js`).
 - **Required Target**:
   - **Frontend**: Next.js (App Router), TypeScript, Tailwind CSS, TanStack React Query, React Hook Form + Zod, Google Maps JavaScript API, full SSR/ISR SEO.
-  - **Backend**: Java 21, Spring Boot 3, Spring Security (JWT + Refresh Rotation), Spring Data JPA/Hibernate, Flyway, PostgreSQL + PostGIS, Redis (OTP TTL + Rate Limiting), AWS S3 + CloudFront.
+  - **Backend**: Java 17 / 21, Spring Boot 3, Spring Security (JWT + Refresh Rotation), Spring Data JPA/Hibernate, Flyway, PostgreSQL + PostGIS, Redis (Rate Limiting), AWS S3 + CloudFront.
 
 ---
 
@@ -20,7 +20,7 @@ Comparison between Reference Architecture ([SITEMAP.md](./SITEMAP.md) & [API_SPE
 | **Language & Types** | Strict TypeScript (`.ts`, `.tsx`), typed DTOs and Zod schema validations | **Missing** (Pure JavaScript `.jsx`) | Add `tsconfig.json`, define schema types |
 | **Backend Service** | Java 21, Spring Boot 3 layered architecture (Controller -> Service -> Repository), Springdoc OpenAPI | **Missing** (Backend not started) | Initialize Spring Boot 3 project in `backend/` |
 | **Database & Geo** | PostgreSQL 16 + PostGIS (`geography(Point)`), tsvector full-text search, trigram autocomplete, Flyway migrations | **Missing** (No database, hardcoded mock JSON) | Initialize Flyway migrations (`V1__init_schema.sql`), PostGIS queries |
-| **Auth & Security** | Passwordless 6-digit Indian mobile OTP via Redis (300s TTL, 3 attempts limit, rate limiter), JWT Access + Refresh rotation, RBAC | **Partial / Mock** (Frontend has mock OTP form in `Modals.jsx`, no real backend token storage or refresh) | Spring Security JWT module, Redis OTP service, HTTP-only cookie handler |
+| **Auth & Security** | Username/Email/Mobile + Password Auth, BCrypt hashing, JWT Access + Refresh rotation, RBAC | **Done** | Spring Security JWT module, BCrypt password encoder, Refresh token handler |
 | **Header Component** | Dynamic city selector with 50+ cities, category links, role-based user avatar menu, Login trigger | **Partial** (`Header.jsx` exists, but has static city selector and mock login trigger without auth state) | `src/components/Header.jsx` |
 | **Hero & Search Bar** | Category tabs (Rent, Buy, Commercial, PG, Plots), Location autocomplete with Google Places / backend API, BHK & budget filters | **Partial** (`Hero.jsx` exists with tabs, but lacks live backend autocomplete and router navigation) | `src/components/Hero.jsx` |
 | **Commercial Offerings (Desktop)** | 2-column layout: Left (headline + "Explore Commercial Properties" button), Right (3x2 grid with tall card for Office Space) | **Wrong** (Single 5-column row without left column/CTA button) | `src/components/CommercialOfferings.jsx` |
@@ -60,7 +60,7 @@ Comparison between Reference Architecture ([SITEMAP.md](./SITEMAP.md) & [API_SPE
 
 2. **Phase 5: Backend Modules (Spring Boot 3)**:
    - Module 1: Project setup, exceptions, CORS, Swagger.
-   - Module 2: Passwordless OTP + Redis + JWT Security.
+   - Module 2: User Password Auth + JWT Security.
    - Module 3: User profile, wishlist, saved searches.
    - Module 4: Property CRUD & moderation.
    - Module 5: PostGIS geo search & multi-facet filtering.

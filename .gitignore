@@ -38,3 +38,7 @@ target/
 *.njsproj
 *.sln
 *.sw?
+
+# Media Uploads
+uploads/
+backend/uploads/

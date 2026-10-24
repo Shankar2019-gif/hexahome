@@ -1,27 +1,26 @@
 # HexaHome Backend API Specification & Contract (Phase 2 Deliverable)
 
-Backend Engine: Java 21, Spring Boot 3, Spring Security (JWT Access + Refresh Rotation), PostgreSQL + PostGIS, Redis (OTP TTL + Rate Limiting), AWS S3 + CloudFront.
+Backend Engine: Java 17 / 21, Spring Boot 3, Spring Security (JWT Access + Refresh Rotation), PostgreSQL + PostGIS, Redis (Rate Limiting), AWS S3 + CloudFront.
 
 ---
 
 ## 1. Authentication & Security Architecture
 
 ### 1.1 Auth Flow Overview
-1. **Passwordless OTP**: Users log in exclusively using their 10-digit Indian mobile number.
-2. **OTP Generation**:
-   - 6-digit numeric OTP generated via cryptographically secure pseudo-random generator.
-   - Stored in Redis with key `otp:{phone}` and TTL = 300 seconds (5 minutes).
-   - Rate limiting: Max 3 OTP requests per 10 minutes per IP/Phone via Redis sliding window counter.
-   - Max 3 invalid verification attempts before the OTP is invalidated.
+1. **Direct Account Auth**: Users authenticate using their username, email, or 10-digit Indian mobile number with password.
+2. **Registration**:
+   - First name, last name, email (optional), phone number, role, and password.
+   - Passwords encoded with Spring Security BCryptPasswordEncoder.
 3. **JWT Token Issuance**:
    - **Access Token**: Short-lived (15 minutes). Contains `sub` (userId), `phone`, `role`, `authorities`.
-   - **Refresh Token**: Long-lived (7 days). Stored as an HTTP-only secure cookie or secure header, with hash stored in Redis/DB (`refresh_tokens` table) to support instantaneous revocation and token rotation.
+   - **Refresh Token**: Long-lived (7 days). Token rotation supported on refresh.
 4. **Roles & Authorities**:
    - `ROLE_TENANT`
    - `ROLE_BUYER`
    - `ROLE_OWNER`
    - `ROLE_LANDLORD`
    - `ROLE_AGENT`
+   - `ROLE_BUILDER`
    - `ROLE_PG_OWNER`
    - `ROLE_PG_SEEKER`
    - `ROLE_ADMIN`
@@ -30,62 +29,55 @@ Backend Engine: Java 21, Spring Boot 3, Spring Security (JWT Access + Refresh Ro
 
 ## 2. API Endpoints by Domain
 
-### 2.1 Auth Module (`/api/auth`)
+### 2.1 Auth Module (`/api/v1/auth`)
 
-#### `POST /api/auth/send-otp`
-- **Trigger**: Login modal, Post Property verification, Lead view verification.
+#### `POST /api/v1/auth/login`
+- **Trigger**: Login modal, admin login, page navigation redirect.
 - **Request Headers**: `Content-Type: application/json`
 - **Request Body**:
   ```json
   {
-    "phone": "9876543210"
+    "username": "9876543210",
+    "password": "Password@123"
   }
   ```
 - **Response 200 OK**:
   ```json
   {
     "success": true,
-    "message": "OTP sent successfully to +91 9876543210",
-    "expiresInSeconds": 300
-  }
-  ```
-- **Error Responses**:
-  - `400 Bad Request`: `{"error": "INVALID_PHONE_NUMBER", "message": "Phone number must be a valid 10-digit Indian number"}`
-  - `429 Too Many Requests`: `{"error": "RATE_LIMIT_EXCEEDED", "message": "Too many OTP requests. Try again after 10 minutes"}`
-
-#### `POST /api/auth/verify-otp/`
-- **Trigger**: Entering 6-digit OTP in verification modal.
-- **Request Body**:
-  ```json
-  {
-    "phone": "9876543210",
-    "otp": "458921",
-    "role": "TENANT"
-  }
-  ```
-- **Response 200 OK**:
-  ```json
-  {
-    "success": true,
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "d8e3c12a-89a1-432a-bc91-23e5a782b891",
-    "tokenType": "Bearer",
-    "expiresIn": 900,
-    "user": {
-      "id": "usr_98a72b11",
-      "phone": "9876543210",
-      "name": "Arun Kumar",
-      "email": "arun@example.com",
-      "role": "TENANT",
-      "isVerified": true,
-      "profilePicUrl": "https://img.hexahome.in/media/users/usr_98a72b11.webp",
-      "createdAt": "2026-03-15T10:20:00Z"
+    "message": "Logged in successfully",
+    "data": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "d8e3c12a-89a1-432a-bc91-23e5a782b891",
+      "expiresIn": 900,
+      "user": {
+        "id": "usr_98a72b11",
+        "phone": "9876543210",
+        "name": "Arun Kumar",
+        "email": "arun@example.com",
+        "role": "TENANT",
+        "isVerified": true
+      }
     }
   }
   ```
 - **Error Responses**:
-  - `401 Unauthorized`: `{"error": "INVALID_OTP", "message": "The OTP entered is incorrect. 2 attempts remaining"}`
-  - `410 Gone`: `{"error": "OTP_EXPIRED", "message": "The OTP has expired. Please request a new OTP"}`
+  - `400 Bad Request`: `{"error": "BAD_REQUEST", "message": "Incorrect password. Please verify and try again."}`
+
+#### `POST /api/v1/auth/register`
+- **Trigger**: Signup form modal.
+- **Request Body**:
+  ```json
+  {
+    "firstName": "Arun",
+    "lastName": "Kumar",
+    "phone": "9876543210",
+    "email": "arun@example.com",
+    "password": "Password@123",
+    "role": "TENANT"
+  }
+  ```
+- **Response 200 OK**: Returns JWT `AuthResponse` with created user.
 
 #### `POST /api/auth/refresh-token`
 - **Request Body**:

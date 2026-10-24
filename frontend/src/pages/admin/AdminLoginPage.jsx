@@ -50,7 +50,11 @@ export default function AdminLoginPage({ onNavigate, onLoginSuccess }) {
         window.dispatchEvent(new PopStateEvent('popstate'));
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Authentication failed. Please verify credentials.');
+            let msg = err.message || 'Authentication failed. Please verify credentials.';
+      if (/otp|phone/i.test(msg)) {
+        msg = 'Invalid admin username or password. Please verify credentials.';
+      }
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }

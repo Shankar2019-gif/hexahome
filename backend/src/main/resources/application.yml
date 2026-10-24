@@ -22,6 +22,8 @@ spring:
 
 server:
   port: ${PORT:8081}
+  tomcat:
+    connection-timeout: 60000ms
   servlet:
     context-path: /
   error:

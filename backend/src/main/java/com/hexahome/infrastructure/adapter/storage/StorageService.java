@@ -12,6 +12,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -73,7 +75,8 @@ public class StorageService {
 
     private S3Client s3Client;
     private S3Presigner s3Presigner;
-    private boolean s3Configured = false;
+    private volatile boolean s3Configured = false;
+    private final java.util.concurrent.atomic.AtomicInteger s3ConsecutiveFailures = new java.util.concurrent.atomic.AtomicInteger(0);
 
     @Autowired
     public StorageService(
@@ -122,9 +125,17 @@ public class StorageService {
             StaticCredentialsProvider provider = StaticCredentialsProvider.create(credentials);
             Region awsRegion = Region.of(this.region);
 
+            // Bounded timeouts to prevent socket stalls and client timeout errors
+            ClientOverrideConfiguration clientOverrideConfig = ClientOverrideConfiguration.builder()
+                    .apiCallAttemptTimeout(Duration.ofSeconds(4))
+                    .apiCallTimeout(Duration.ofSeconds(8))
+                    .retryPolicy(RetryPolicy.none())
+                    .build();
+
             this.s3Client = S3Client.builder()
                     .region(awsRegion)
                     .credentialsProvider(provider)
+                    .overrideConfiguration(clientOverrideConfig)
                     .build();
 
             this.s3Presigner = S3Presigner.builder()
@@ -249,7 +260,9 @@ public class StorageService {
             try {
                 fileUrl = uploadToS3(file, objectKey, cleanContentType);
                 provider = "AWS_S3";
+                s3ConsecutiveFailures.set(0);
             } catch (Exception e) {
+                handleS3Failure(e);
                 log.warn("S3 upload failed ({}). Falling back to local storage.", e.getMessage());
                 fileUrl = uploadToLocal(file, objectKey);
                 provider = "LOCAL_DISK";
@@ -270,6 +283,26 @@ public class StorageService {
         );
     }
 
+    private void handleS3Failure(Exception e) {
+        int failures = s3ConsecutiveFailures.incrementAndGet();
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof S3Exception s3e) {
+                int status = s3e.statusCode();
+                if (status == 403 || status == 401 || status == 400) {
+                    log.warn("AWS S3 permission/configuration error (HTTP {}): Disabling S3 provider and switching permanently to local storage fallback.", status);
+                    this.s3Configured = false;
+                    return;
+                }
+            }
+            cause = cause.getCause();
+        }
+        if (failures >= 2) {
+            log.warn("AWS S3 reached failure threshold ({} consecutive failures). Disabling S3 provider and switching to local storage fallback.", failures);
+            this.s3Configured = false;
+        }
+    }
+
     /**
      * Compatibility wrapper for existing multipart callers.
      */
@@ -282,13 +315,10 @@ public class StorageService {
             throw new BadRequestException("At least one file must be provided for upload");
         }
 
-        List<MediaResponseDto> results = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (file != null && !file.isEmpty()) {
-                results.add(uploadDirect(file, propertyId));
-            }
-        }
-        return results;
+        return files.parallelStream()
+                .filter(file -> file != null && !file.isEmpty())
+                .map(file -> uploadDirect(file, propertyId))
+                .toList();
     }
 
     // =========================================================================

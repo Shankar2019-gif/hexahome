@@ -148,7 +148,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                "Invalid phone/email or OTP/password",
+                "Invalid admin username or password",
                 request.getRequestURI()
         );
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);

@@ -3566,12 +3566,6 @@
   background: var(--bg-subtle);
 }
 
-.otp-input {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 12px;
-  text-align: center;
-}
 
 /* App Download Modal */
 .modal-qr-section {

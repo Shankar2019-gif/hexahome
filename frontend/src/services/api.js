@@ -149,61 +149,6 @@ export const authApi = {
     };
   },
 
-  sendOtp: async (phone) => {
-    try {
-      return await apiClient.post('/auth/send-otp', { phone });
-    } catch {
-      return { success: true, message: `OTP sent to +91 ${phone}` };
-    }
-  },
-
-  verifyOtp: async (phoneOrPayload, otp, name) => {
-    let bodyPayload;
-    if (typeof phoneOrPayload === 'object' && phoneOrPayload !== null) {
-      bodyPayload = phoneOrPayload;
-    } else {
-      bodyPayload = { phone: phoneOrPayload, otp, name };
-    }
-
-    try {
-      const res = await apiClient.post('/auth/verify-otp', bodyPayload);
-      if (res && res.accessToken) {
-        localStorage.setItem('hexahome_token', res.accessToken);
-      }
-      if (res && res.refreshToken) {
-        localStorage.setItem('hexahome_refresh_token', res.refreshToken);
-      }
-      if (res && res.user) {
-        localStorage.setItem('hexahome_user', JSON.stringify(res.user));
-      }
-      window.dispatchEvent(new Event('hexahome_auth_changed'));
-      return res;
-    } catch {
-      const phone = bodyPayload.phone || '';
-      const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
-      const userName = bodyPayload.name || (bodyPayload.firstName ? `${bodyPayload.firstName} ${bodyPayload.lastName || ''}`.trim() : '') || 'User';
-      const fallbackUser = {
-        id: 'usr_' + (cleanPhone || Date.now()),
-        phone: cleanPhone,
-        name: userName,
-        email: bodyPayload.email || '',
-        role: bodyPayload.role || 'Individual',
-        roles: [bodyPayload.role || 'Individual'],
-        profilePicUrl: bodyPayload.profilePicUrl || null,
-        isVerified: true,
-      };
-      const mockToken = 'mock-jwt-token-' + (cleanPhone || Date.now());
-      localStorage.setItem('hexahome_token', mockToken);
-      localStorage.setItem('hexahome_user', JSON.stringify(fallbackUser));
-      window.dispatchEvent(new Event('hexahome_auth_changed'));
-      return {
-        accessToken: mockToken,
-        user: fallbackUser,
-        message: 'Logged in successfully',
-      };
-    }
-  },
-
   getMe: () => apiClient.get('/auth/me'),
 
   logout: () => {
@@ -306,6 +251,7 @@ export const mediaApi = {
     formData.append('category', category);
     return apiClient.post('/media/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
   },
 
@@ -315,6 +261,7 @@ export const mediaApi = {
     formData.append('category', category);
     return apiClient.post('/media/upload-multiple', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
   },
 

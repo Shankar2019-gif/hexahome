@@ -24,9 +24,9 @@ Application Engine: Next.js (App Router), SSR + ISR with dynamic routing, Tailwi
     - `Projects` (`/projects-in-{city}-hmpro/`)
   - **Action CTAs**:
     - **Post Property (FREE)**: Highlighted button (`#ffc209` gold / `#033487` navy), links to `/post-property/`.
-    - **Login / Signup**: Trigger modal (Phone + OTP). When logged in: Profile Avatar with dropdown (`My Listings`, `Leads`, `Saved Properties`, `My Plan`, `Settings`, `Logout`).
+    - **Login / Signup**: Trigger modal (Username/Email/Phone + Password). When logged in: Profile Avatar with dropdown (`My Listings`, `Leads`, `Saved Properties`, `My Plan`, `Settings`, `Logout`).
 - **Modals Triggered from Header**:
-  - `LoginModal`: Phone number input -> 4/6-digit OTP verification -> Profile completion.
+  - `LoginModal`: Username/Email/Mobile + Password -> Registration / Profile completion.
   - `CitySelectModal`: Search input + Popular cities grid + All cities list.
 
 ---
@@ -164,7 +164,7 @@ Application Engine: Next.js (App Router), SSR + ISR with dynamic routing, Tailwi
 
 ### 2.4 Post Property Flow (`/post-property/`)
 - **URL Pattern**: `/post-property/` & `/post-property-in-{city}-hmpp/`
-- **Login Needed**: Yes (Redirects to OTP login before final publishing, allows draft filling).
+- **Login Needed**: Yes (Redirects to login before final publishing, allows draft filling).
 - **Multi-Step Form Sequence**:
   - **Step 1: Basic Details**:
     - Property For: `Rent` | `Resale/Sale` | `PG/Hostel` | `Commercial`
@@ -190,17 +190,16 @@ Application Engine: Next.js (App Router), SSR + ISR with dynamic routing, Tailwi
     - Presigned S3 upload progress bars
   - **Step 5: Review & Publish**:
     - Complete summary preview card
-    - Phone verification modal if not already logged in
+    - Authentication prompt if not already logged in
     - Submit -> Moderation status (`Pending Verification` -> `Active`).
 
 ---
 
 ### 2.5 Auth & User Dashboard (`/account/...`)
 - **Login / Signup Pattern**:
-  - Modal accessible from any page: `/api/auth/verify-otp/`
-  - Input: Indian Mobile Number (10 digits).
-  - OTP Input: 6 digit auto-focus inputs with 60-second resend timer.
-  - New User: Name, Email, Primary Role selection (`Tenant`, `Buyer`, `Owner`, `Agent`).
+  - Modal accessible from any page: `/auth` or AuthModal
+  - Input: Username / Email / Indian Mobile Number (10 digits) + Password.
+  - New User Registration: First name, Last name, Email, Mobile, Password, and Role selection (`Tenant`, `Buyer`, `Owner`, `Agent`, `Builder`).
 - **Dashboard Routes**:
   - `/account/`: General overview, active listings count, leads count, active subscription status.
   - `/account/my-properties/`: Tabbed list (`Active`, `Under Review`, `Expired`, `Drafts`). Actions: Edit, Delete, Mark as Rented/Sold, Boost/Promote.

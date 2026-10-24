@@ -33,23 +33,38 @@ export default function MyListingsTab({ onNavigate }) {
     try {
       setLoading(true);
       setError('');
+      const localListings = JSON.parse(localStorage.getItem('hexahome_user_properties') || '[]');
       const res = await propertyApi.getMyProperties(targetPage, 10);
       const data = res?.data || res;
+      let fetched = [];
       if (data && Array.isArray(data.content)) {
-        setProperties(data.content);
+        fetched = data.content;
         setTotalPages(data.totalPages || 1);
-        setTotalElements(data.totalElements || data.content.length);
+        setTotalElements((data.totalElements || data.content.length) + localListings.length);
         setPage(data.number || targetPage);
       } else if (Array.isArray(data)) {
-        setProperties(data);
+        fetched = data;
         setTotalPages(1);
-        setTotalElements(data.length);
-      } else {
-        setProperties([]);
+        setTotalElements(data.length + localListings.length);
       }
+      // Merge unique by id
+      const combined = [...localListings];
+      fetched.forEach((fp) => {
+        if (!combined.some((cp) => cp.id === fp.id)) {
+          combined.push(fp);
+        }
+      });
+      setProperties(combined);
     } catch (err) {
-      console.warn('[MyListingsTab] Error fetching user properties:', err);
-      setError('Failed to load your listings. Please try again.');
+      console.warn('[MyListingsTab] Error fetching user properties, checking local fallback:', err);
+      const localListings = JSON.parse(localStorage.getItem('hexahome_user_properties') || '[]');
+      if (localListings.length > 0) {
+        setProperties(localListings);
+        setTotalPages(1);
+        setTotalElements(localListings.length);
+      } else {
+        setError('Failed to load your listings. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -84,7 +99,16 @@ export default function MyListingsTab({ onNavigate }) {
   const handleDeleteListing = async (id) => {
     try {
       setActionLoadingId(id);
-      await propertyApi.deleteProperty(id);
+      // Remove from local storage if present
+      const localListings = JSON.parse(localStorage.getItem('hexahome_user_properties') || '[]');
+      const filtered = localListings.filter((p) => p.id !== id);
+      localStorage.setItem('hexahome_user_properties', JSON.stringify(filtered));
+
+      try {
+        await propertyApi.deleteProperty(id);
+      } catch (e) {
+        console.warn('Backend delete skipped/failed, removed locally:', e.message);
+      }
       showToast('Property listing deleted successfully.');
       setDeleteConfirmId(null);
       // Refresh listings

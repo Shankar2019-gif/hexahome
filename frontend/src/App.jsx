@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import HomePage from './pages/HomePage';
-import AuthPage from './pages/AuthPage';
-import PostPropertyPage from './pages/PostPropertyPage';
-import PropertySearchPage from './pages/PropertySearchPage';
-import PropertyDetailPage from './pages/PropertyDetailPage';
 import ContactOwnerModal from './components/property/ContactOwnerModal';
-import AdminApp from './pages/admin/AdminApp';
-import UserDashboard from './pages/dashboard/UserDashboard';
 import {
   PostPropertyModal,
   LoginModal,
@@ -17,6 +11,48 @@ import { useAuth } from './hooks/useAuth';
 import { useRouter } from './hooks/useRouter';
 import { CITIES } from './data/hexahomeData';
 import './App.css';
+
+// Lazy-loaded pages to reduce initial bundle size
+const AdminApp = lazy(() => import('./pages/admin/AdminApp'));
+const UserDashboard = lazy(() => import('./pages/dashboard/UserDashboard'));
+const PostPropertyPage = lazy(() => import('./pages/PostPropertyPage'));
+const PropertySearchPage = lazy(() => import('./pages/PropertySearchPage'));
+const PropertyDetailPage = lazy(() => import('./pages/PropertyDetailPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+
+function PageLoader() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '16px',
+        color: '#02225e',
+      }}
+    >
+      <div
+        style={{
+          width: '36px',
+          height: '36px',
+          border: '3px solid #e2e8f0',
+          borderTopColor: '#0284c7',
+          borderRadius: '50%',
+          animation: 'pageSpin 0.8s linear infinite',
+        }}
+      />
+      <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Loading...</span>
+      <style>{`
+        @keyframes pageSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function App() {
   const [selectedCity, setSelectedCity] = useState(CITIES[0]);
@@ -33,11 +69,13 @@ export default function App() {
 
   if (currentPath.startsWith('/admin')) {
     return (
-      <AdminApp
-        key={currentPath}
-        currentPath={currentPath}
-        onNavigate={navigate}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <AdminApp
+          key={currentPath}
+          currentPath={currentPath}
+          onNavigate={navigate}
+        />
+      </Suspense>
     );
   }
 
@@ -151,7 +189,9 @@ export default function App() {
 
   return (
     <>
-      {renderCustomerContent()}
+      <Suspense fallback={<PageLoader />}>
+        {renderCustomerContent()}
+      </Suspense>
       <FloatingWidgets currentPath={currentPath} onNavigate={navigate} />
     </>
   );

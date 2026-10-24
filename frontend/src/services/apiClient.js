@@ -10,7 +10,7 @@ import axios from 'axios';
 // ============================================================================
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/v1`
-  : (import.meta.env.PROD ? 'https://hexahome-backend-xjmu.onrender.com/api/v1' : '/api/v1');
+  : '/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
@@ -77,8 +77,12 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (!error.response) {
-      console.error('[Network Error]: Server unavailable or connection dropped', error.message);
-      return Promise.reject(new Error(error.message || 'Network connection error'));
+      const isTimeout = error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'));
+      const friendlyMsg = isTimeout
+        ? 'Request timed out. The server or cloud storage is taking too long to respond. Please check your network or try again.'
+        : (error.message || 'Network connection error');
+      console.error('[Network Error]: Server unavailable or connection dropped', friendlyMsg);
+      return Promise.reject(new Error(friendlyMsg));
     }
 
     const { status, data } = error.response;
@@ -91,8 +95,8 @@ apiClient.interceptors.response.use(
       // Don't loop refresh for auth endpoints
       if (
         requestUrl.includes('/auth/refresh') ||
-        requestUrl.includes('/auth/verify-otp') ||
-        requestUrl.includes('/auth/send-otp')
+        requestUrl.includes('/auth/login') ||
+        requestUrl.includes('/auth/register')
       ) {
         return Promise.reject(new Error(errorMsg));
       }

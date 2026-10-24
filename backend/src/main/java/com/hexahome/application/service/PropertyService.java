@@ -265,7 +265,7 @@ public class PropertyService implements com.hexahome.application.port.in.Propert
             newUser.setEmail(request.getOwnerEmail());
             newUser.setVerified(true);
             newUser.setActive(true);
-            roleRepository.findByName("ROLE_OWNER").ifPresent(r -> newUser.setRoles(Set.of(r)));
+            roleRepository.findByName("ROLE_OWNER").ifPresent(r -> newUser.setRoles(new HashSet<>(List.of(r))));
             return userRepository.save(newUser);
         });
     }

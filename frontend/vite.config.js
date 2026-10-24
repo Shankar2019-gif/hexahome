@@ -12,18 +12,26 @@ export default defineConfig({
         target: process.env.VITE_GATEWAY_URL || 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false,
-        timeout: 15000,
+        timeout: 120000,
+        proxyTimeout: 120000,
       },
       '/uploads': {
         target: process.env.VITE_GATEWAY_URL || 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false,
+        timeout: 120000,
+        proxyTimeout: 120000,
       }
     }
   },
   preview: {
     host: '0.0.0.0',
     port: 8085,
+  },
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    pool: 'threads',
   }
 })
 

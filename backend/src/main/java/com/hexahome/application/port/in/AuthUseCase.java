@@ -14,10 +14,6 @@ public interface AuthUseCase {
 
     AuthResponse register(RegisterRequest request);
 
-    SendOtpResponse sendOtp(SendOtpRequest request);
-
-    AuthResponse verifyOtp(VerifyOtpRequest request);
-
     AuthResponse refreshToken(RefreshTokenRequest request);
 
     UserDto getCurrentUser(UUID userId);

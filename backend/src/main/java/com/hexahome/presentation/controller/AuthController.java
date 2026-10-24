@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Authentication", description = "Endpoints for OTP delivery, verification, JWT refresh, and identity")
+@Tag(name = "Authentication", description = "Endpoints for user login, registration, JWT refresh, and identity")
 public class AuthController {
 
     private final AuthService authService;
@@ -36,20 +36,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(ApiResponse.success("Account created successfully", response));
-    }
-
-    @PostMapping("/send-otp")
-    @Operation(summary = "Send OTP to mobile number", description = "Generates and sends a 6-digit OTP to the Indian mobile number via SMS gateway (mock in dev mode)")
-    public ResponseEntity<ApiResponse<SendOtpResponse>> sendOtp(@Valid @RequestBody SendOtpRequest request) {
-        SendOtpResponse response = authService.sendOtp(request);
-        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
-    }
-
-    @PostMapping("/verify-otp")
-    @Operation(summary = "Verify OTP and obtain JWT tokens", description = "Validates the 6-digit OTP, auto-registers user if new, and returns Access and Refresh JWT tokens")
-    public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
-        AuthResponse response = authService.verifyOtp(request);
-        return ResponseEntity.ok(ApiResponse.success("Authentication successful", response));
     }
 
     @PostMapping("/refresh")

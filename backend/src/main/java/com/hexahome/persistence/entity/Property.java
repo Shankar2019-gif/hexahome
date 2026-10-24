@@ -442,7 +442,7 @@ public class Property {
     }
 
     public void setImages(List<PropertyImage> images) {
-        this.images = images;
+        this.images = (images != null) ? new ArrayList<>(images) : new ArrayList<>();
     }
 
     public void addImage(PropertyImage image) {
@@ -455,7 +455,7 @@ public class Property {
     }
 
     public void setAmenities(Set<Amenity> amenities) {
-        this.amenities = amenities;
+        this.amenities = (amenities != null) ? new HashSet<>(amenities) : new HashSet<>();
     }
 
     public PgDetail getPgDetail() {
