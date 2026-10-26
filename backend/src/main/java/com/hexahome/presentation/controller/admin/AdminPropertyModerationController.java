@@ -97,6 +97,30 @@ public class AdminPropertyModerationController {
         return ResponseEntity.ok(ApiResponse.success("Hot deal status updated to " + isHotDeal, isHotDeal));
     }
 
+    @PostMapping("/{id}/toggle-verified")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR')")
+    @Operation(summary = "Toggle property genuine/verified badge", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ApiResponse<Boolean>> toggleVerified(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AdminPrincipal admin,
+            HttpServletRequest request) {
+
+        boolean isVerified = moderationService.toggleVerified(id, admin.getId(), extractClientIp(request));
+        return ResponseEntity.ok(ApiResponse.success("Property verified/genuine status updated to " + isVerified, isVerified));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR')")
+    @Operation(summary = "Permanently remove a property listing from the platform", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ApiResponse<Void>> deleteListing(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AdminPrincipal admin,
+            HttpServletRequest request) {
+
+        moderationService.deleteListing(id, admin.getId(), extractClientIp(request));
+        return ResponseEntity.ok(ApiResponse.success("Listing permanently removed successfully", null));
+    }
+
     @PostMapping("/bulk-action")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MODERATOR')")
     @Operation(summary = "Execute batch moderation action on multiple listings", security = @SecurityRequirement(name = "bearerAuth"))

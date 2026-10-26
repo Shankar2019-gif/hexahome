@@ -10,6 +10,9 @@ import {
   Layers,
   ChevronRight,
   ExternalLink,
+  ShieldCheck,
+  ShieldAlert,
+  Trash2,
 } from 'lucide-react';
 import { adminPropertyApi } from '../../services/adminApi';
 import AdminDataTable from '../../components/admin/common/AdminDataTable';
@@ -168,6 +171,36 @@ export default function AdminPropertyModerationPage() {
     }
   };
 
+  // Toggle Genuine / Verified
+  const handleToggleVerified = async (id) => {
+    try {
+      const isVerified = await adminPropertyApi.toggleVerified(id);
+      setActionSuccess(`Property genuine/verified status updated to ${isVerified}.`);
+      fetchListings();
+    } catch (err) {
+      setActionError(err.message || "Failed to toggle genuine status");
+    }
+  };
+
+  // Permanently Remove / Delete Listing
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently remove and delete this property listing? This cannot be undone.")) {
+      return;
+    }
+    try {
+      await adminPropertyApi.deleteListing(id);
+      setActionSuccess("Property listing permanently removed from platform.");
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      fetchListings();
+    } catch (err) {
+      setActionError(err.message || "Failed to delete listing");
+    }
+  };
+
   // Toggle Hot Deal
   const handleToggleHotDeal = async (id) => {
     try {
@@ -290,6 +323,15 @@ export default function AdminPropertyModerationPage() {
       render: (row) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
           <AdminStatusBadge status={row.status} />
+          {row.isVerified || row.verified ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '0.7rem', color: '#16a34a', fontWeight: 700 }}>
+              <ShieldCheck size={12} /> Genuine
+            </span>
+          ) : (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 500 }}>
+              <ShieldAlert size={12} /> Unverified
+            </span>
+          )}
           {row.isHotDeal && (
             <span
               style={{
@@ -332,38 +374,61 @@ export default function AdminPropertyModerationPage() {
           </button>
 
           <AdminRoleGuard allowedRoles={['SUPER_ADMIN', 'MODERATOR']}>
-            {row.status === 'PENDING_VERIFICATION' && (
-              <>
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-success admin-btn-sm"
-                  onClick={() => handleApprove(row.id)}
-                  title="Approve Listing"
-                >
-                  <Check size={14} />
-                </button>
+            {/* Toggle Genuine / Verified status */}
+            <button
+              type="button"
+              className={`admin-btn admin-btn-sm ${row.isVerified || row.verified ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+              onClick={() => handleToggleVerified(row.id)}
+              title={row.isVerified || row.verified ? "Mark as Not Genuine / Unverified" : "Mark as Genuine & Verified"}
+            >
+              <ShieldCheck size={14} />
+            </button>
 
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-danger admin-btn-sm"
-                  onClick={() => handleOpenReject(row.id)}
-                  title="Reject with Reason"
-                >
-                  <X size={14} />
-                </button>
-              </>
+            {/* Keep / Approve: available for any non-active property */}
+            {row.status !== 'ACTIVE' && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-success admin-btn-sm"
+                onClick={() => handleApprove(row.id)}
+                title="Keep & Approve Listing"
+              >
+                <Check size={14} />
+              </button>
             )}
 
+            {/* Reject with Reason */}
+            {row.status !== 'REJECTED' && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-warning admin-btn-sm"
+                onClick={() => handleOpenReject(row.id)}
+                title="Reject with Reason"
+              >
+                <X size={14} />
+              </button>
+            )}
+
+            {/* Expire / Delist */}
             {row.status === 'ACTIVE' && (
               <button
                 type="button"
                 className="admin-btn admin-btn-secondary admin-btn-sm"
                 onClick={() => handleExpire(row.id)}
-                title="Expire Listing"
+                title="Expire / Delist Listing"
               >
                 <Clock size={14} />
               </button>
             )}
+
+            {/* Remove / Permanently Delete Listing */}
+            <button
+              type="button"
+              className="admin-btn admin-btn-danger admin-btn-sm"
+              onClick={() => handleDelete(row.id)}
+              title="Permanently Remove / Delete Listing"
+            >
+              <Trash2 size={14} />
+            </button>
           </AdminRoleGuard>
 
           <AdminRoleGuard allowedRoles={['SUPER_ADMIN', 'MODERATOR', 'SALES']}>

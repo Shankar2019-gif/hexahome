@@ -29,8 +29,9 @@ function parseUrlFilters() {
   }
 
   return {
-    city: params.get('city') || '',
-    locality: params.get('locality') || '',
+    city: params.get("city") || "",
+    locality: params.get("locality") || params.get("location") || "",
+    q: params.get("q") || params.get("query") || "",
     category: params.get('category') || params.get('adType') || 'RENT',
     bhk: bhkArray,
     minPrice: params.get('minPrice') || '',
@@ -61,8 +62,9 @@ export default function PropertySearchPage({
   // Sync state to URL without reloading page
   const syncFiltersToUrl = useCallback((updated) => {
     const params = new URLSearchParams();
-    if (updated.city) params.set('city', updated.city);
-    if (updated.locality) params.set('locality', updated.locality);
+    if (updated.city) params.set("city", updated.city);
+    if (updated.locality) params.set("locality", updated.locality);
+    if (updated.q) params.set("q", updated.q);
     if (updated.category) params.set('category', updated.category);
     if (updated.bhk && updated.bhk.length > 0) {
       params.set('bhk', Array.isArray(updated.bhk) ? updated.bhk.join(',') : updated.bhk);
@@ -323,14 +325,42 @@ export default function PropertySearchPage({
                 We couldn't find any listings matching your specific combination of filters.
                 Try clearing one or more filters, widening your price range, or searching a nearby locality.
               </p>
-              <button
-                type="button"
-                className="btn-empty-reset"
-                onClick={handleResetFilters}
-              >
-                <RotateCcw size={16} />
-                <span>Reset All Filters</span>
-              </button>
+              <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "1rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-empty-reset"
+                  onClick={handleResetFilters}
+                >
+                  <RotateCcw size={16} />
+                  <span>Reset All Filters</span>
+                </button>
+                {filters.city && (
+                  <button
+                    type="button"
+                    className="btn-empty-reset"
+                    style={{ background: "#033487", color: "#ffffff", border: "none" }}
+                    onClick={() => {
+                      setFilters({
+                        city: filters.city,
+                        locality: "",
+                        q: "",
+                        category: "RENT",
+                        bhk: [],
+                        minPrice: "",
+                        maxPrice: "",
+                        furnishing: "All",
+                        verifiedOnly: false,
+                        zeroBrokerageOnly: false,
+                        sort: "newest",
+                        page: 0,
+                        size: 12,
+                      });
+                    }}
+                  >
+                    <span>View all listings in {filters.city}</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

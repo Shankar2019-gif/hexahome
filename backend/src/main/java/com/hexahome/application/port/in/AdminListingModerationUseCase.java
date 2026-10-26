@@ -22,5 +22,9 @@ public interface AdminListingModerationUseCase {
 
     boolean toggleHotDeal(UUID propertyId, UUID adminId, String ipAddress);
 
+    boolean toggleVerified(UUID propertyId, UUID adminId, String ipAddress);
+
+    void deleteListing(UUID propertyId, UUID adminId, String ipAddress);
+
     BulkListingActionResultDto executeBulkAction(BulkListingActionRequest request, UUID adminId, String ipAddress);
 }

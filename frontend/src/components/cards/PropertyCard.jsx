@@ -27,9 +27,11 @@ export default function PropertyCard({
   if (!property) return null;
 
   // Resolve cover and secondary images
-  const images = property.images && property.images.length > 0
-    ? (typeof property.images[0] === 'string' ? property.images : property.images.map(img => img.imageUrl || img))
-    : [property.coverImageUrl || property.image || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80'];
+  const rawImages = (property.images && property.images.length > 0)
+    ? (typeof property.images[0] === 'string' ? property.images : property.images.map(img => img.imageUrl || img.thumbnailUrl || img))
+    : (property.imageUrls && property.imageUrls.length > 0 ? property.imageUrls : [property.coverImageUrl || property.image || DEFAULT_PROPERTY_IMAGE]);
+  const images = rawImages.map(resolveImageUrl).filter(Boolean);
+  if (images.length === 0) images.push(DEFAULT_PROPERTY_IMAGE);
 
   const handleNextImage = (e) => {
     e.stopPropagation();
@@ -77,7 +79,7 @@ export default function PropertyCard({
         <img
           src={images[currentImageIndex]}
           alt={title}
-          className="search-card-img"
+          className="search-card-img" onError={handleImageError}
           loading="lazy"
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80';

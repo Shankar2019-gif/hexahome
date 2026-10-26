@@ -162,8 +162,12 @@ export function usePropertyForm({ onSuccess, editId, currentUser } = {}) {
   };
 
   const openWizard = () => {
+    if (!currentUser) {
+      setSubmitError("Please sign in or register before continuing to post your property.");
+      return;
+    }
     if (!validateContact()) return;
-    setSubmitError('');
+    setSubmitError("");
     setIsWizardOpen(true);
   };
 
@@ -261,11 +265,41 @@ export function usePropertyForm({ onSuccess, editId, currentUser } = {}) {
     };
 
     try {
+      let createdResponse;
       if (editPropertyId) {
-        await propertyApi.updateProperty(editPropertyId, payload);
+        createdResponse = await propertyApi.updateProperty(editPropertyId, payload);
       } else {
-        await propertyApi.createProperty(payload);
+        createdResponse = await propertyApi.createProperty(payload);
       }
+
+      // Synchronize immediately to local storage cache for instant visibility
+      try {
+        const localListings = JSON.parse(localStorage.getItem("hexahome_user_properties") || "[]");
+        const respData = createdResponse?.data || createdResponse || {};
+        const syncedItem = {
+          ...payload,
+          id: respData.id || editPropertyId || ("loc_" + Date.now().toString(36)),
+          slug: respData.slug || ((payload.title || "listing").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now().toString(36)),
+          status: respData.status || "ACTIVE",
+          coverImageUrl: payload.imageUrls?.[0] || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80",
+          builtUpArea: payload.areaSqFt,
+          localityName: payload.locality,
+          cityName: payload.city,
+          isVerified: true,
+          zeroBrokerage: true,
+          createdAt: new Date().toISOString(),
+        };
+        const existingIdx = localListings.findIndex((p) => p.id === syncedItem.id);
+        if (existingIdx >= 0) {
+          localListings[existingIdx] = syncedItem;
+        } else {
+          localListings.unshift(syncedItem);
+        }
+        localStorage.setItem("hexahome_user_properties", JSON.stringify(localListings));
+      } catch (cacheErr) {
+        console.warn("[usePropertyForm] Local cache sync warning:", cacheErr.message);
+      }
+
       if (!isMountedRef.current) return;
       setSubmitSuccess(true);
       setTimeout(() => {

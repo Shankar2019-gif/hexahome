@@ -27,8 +27,12 @@ public class PropertySpecification {
             if (StringUtils.hasText(filter.getCity())) {
                 String cityInput = filter.getCity().trim().toLowerCase();
                 String citySlug = cityInput.replace(" ", "-");
-                Predicate slugMatch = cb.equal(cb.lower(root.get("city").get("slug")), citySlug);
-                Predicate nameMatch = cb.equal(cb.lower(root.get("city").get("name")), cityInput);
+                if ("bangalore".equals(cityInput) || "bangalore".equals(citySlug)) {
+                    cityInput = "bengaluru";
+                    citySlug = "bengaluru";
+                }
+                Predicate slugMatch = cb.like(cb.lower(root.get("city").get("slug")), "%" + citySlug + "%");
+                Predicate nameMatch = cb.like(cb.lower(root.get("city").get("name")), "%" + cityInput + "%");
                 predicates.add(cb.or(slugMatch, nameMatch));
             }
 
@@ -36,9 +40,11 @@ public class PropertySpecification {
             if (StringUtils.hasText(filter.getLocality())) {
                 String locInput = filter.getLocality().trim().toLowerCase();
                 String locSlug = locInput.replace(" ", "-");
-                Predicate slugMatch = cb.equal(cb.lower(root.get("locality").get("slug")), locSlug);
-                Predicate nameMatch = cb.equal(cb.lower(root.get("locality").get("name")), locInput);
-                predicates.add(cb.or(slugMatch, nameMatch));
+                Predicate slugMatch = cb.like(cb.lower(root.get("locality").get("slug")), "%" + locSlug + "%");
+                Predicate nameMatch = cb.like(cb.lower(root.get("locality").get("name")), "%" + locInput + "%");
+                Predicate addressMatch = cb.like(cb.lower(root.get("address")), "%" + locInput + "%");
+                Predicate titleMatch = cb.like(cb.lower(root.get("title")), "%" + locInput + "%");
+                predicates.add(cb.or(slugMatch, nameMatch, addressMatch, titleMatch));
             }
 
             // Ad Type (RENT, SALE, PLOT, PG) - handles frontend variations like 'Buy' -> 'SALE', 'Co-living' -> 'PG'

@@ -32,6 +32,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ContactOwnerModal from '../components/property/ContactOwnerModal';
 import { propertyService } from '../services/propertyService';
+import { resolveImageUrl, handleImageError, DEFAULT_PROPERTY_IMAGE } from '../utils/imageUrl';
 import './PropertyDetailPage.css';
 
 export default function PropertyDetailPage({
@@ -141,9 +142,11 @@ export default function PropertyDetailPage({
   }
 
   // Resolve images
-  const images = property.images && property.images.length > 0
-    ? property.images.map((img) => (typeof img === 'string' ? img : img.imageUrl || ''))
-    : [property.coverImageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80'];
+  const rawImages = (property.images && property.images.length > 0)
+    ? property.images.map((img) => (typeof img === 'string' ? img : img.imageUrl || img.thumbnailUrl || ''))
+    : (property.imageUrls && property.imageUrls.length > 0 ? property.imageUrls : [property.coverImageUrl || DEFAULT_PROPERTY_IMAGE]);
+  const images = rawImages.map(resolveImageUrl).filter(Boolean);
+  if (images.length === 0) images.push(DEFAULT_PROPERTY_IMAGE);
 
   const formattedPrice = typeof property.price === 'number'
     ? `₹${property.price.toLocaleString('en-IN')}`
@@ -211,7 +214,7 @@ export default function PropertyDetailPage({
               <img
                 src={images[currentImageIdx]}
                 alt={property.title}
-                className="detail-main-img"
+                className="detail-main-img" onError={handleImageError}
               />
 
               {images.length > 1 && (
@@ -249,7 +252,7 @@ export default function PropertyDetailPage({
                     className={`detail-thumb-item ${idx === currentImageIdx ? 'active' : ''}`}
                     onClick={() => setCurrentImageIdx(idx)}
                   >
-                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="detail-thumb-img" />
+                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="detail-thumb-img" onError={handleImageError} />
                   </div>
                 ))}
               </div>

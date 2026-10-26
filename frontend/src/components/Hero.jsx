@@ -42,7 +42,7 @@ export default function Hero({ selectedCity, onSearch, onOpenPremium }) {
       onSearch({
         category: activeCategory,
         propertyType,
-        location: locationQuery || selectedCity?.name || 'Noida'
+        location: locationQuery ? locationQuery.trim() : ''
       });
     }
   };

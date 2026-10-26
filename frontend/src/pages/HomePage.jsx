@@ -43,12 +43,38 @@ export default function HomePage({
     if (onNavigate) {
       const params = new URLSearchParams();
       if (searchData?.category) params.set('category', searchData.category.toUpperCase());
-      if (searchData?.location) params.set('locality', searchData.location);
       if (searchData?.furnishing) params.set('furnishing', searchData.furnishing.toUpperCase());
       if (searchData?.type) params.set('bhk', searchData.type);
-      if (selectedCity?.slug || selectedCity?.name) {
-        params.set('city', (selectedCity.slug || selectedCity.name).toLowerCase());
+
+      const rawLocation = searchData?.location?.trim() || searchData?.query?.trim() || '';
+      let targetCity = (selectedCity?.slug || selectedCity?.name || '').toLowerCase();
+
+      if (rawLocation) {
+        const matchedCity = CITIES.find(
+          (c) => c.name.toLowerCase() === rawLocation.toLowerCase() || c.slug.toLowerCase() === rawLocation.toLowerCase()
+        );
+
+        if (matchedCity) {
+          targetCity = (matchedCity.slug || matchedCity.name).toLowerCase();
+        } else if (rawLocation.includes(',')) {
+          const parts = rawLocation.split(',').map((s) => s.trim());
+          params.set('locality', parts[0]);
+          if (parts[1]) {
+            const cityPart = CITIES.find((c) => c.name.toLowerCase().includes(parts[1].toLowerCase()));
+            if (cityPart) {
+              targetCity = (cityPart.slug || cityPart.name).toLowerCase();
+            }
+          }
+        } else {
+          params.set('locality', rawLocation);
+          params.set('q', rawLocation);
+        }
       }
+
+      if (targetCity) {
+        params.set('city', targetCity);
+      }
+
       onNavigate(`/search${params.toString() ? '?' + params.toString() : ''}`);
     } else {
       scrollTo('#properties-for-rent');

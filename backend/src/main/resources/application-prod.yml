@@ -26,6 +26,8 @@ hexahome:
     secret: ${JWT_SECRET}
     access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  storage:
+    base-url: ${STORAGE_BASE_URL:https://hexahome-backend-xjmu.onrender.com/uploads}
   aws:
     region: ${AWS_REGION:ap-south-1}
     s3-bucket: ${AWS_S3_BUCKET_NAME:}

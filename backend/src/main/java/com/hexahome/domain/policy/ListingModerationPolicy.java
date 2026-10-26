@@ -23,7 +23,7 @@ public class ListingModerationPolicy {
         if (STATUS_ACTIVE.equalsIgnoreCase(currentStatus)) {
             throw new BadRequestException("Listing is already active and approved.");
         }
-        if (!STATUS_PENDING.equalsIgnoreCase(currentStatus) && !STATUS_INACTIVE.equalsIgnoreCase(currentStatus)) {
+        if (!STATUS_PENDING.equalsIgnoreCase(currentStatus) && !STATUS_INACTIVE.equalsIgnoreCase(currentStatus) && !STATUS_REJECTED.equalsIgnoreCase(currentStatus)) {
             throw new BadRequestException("Cannot approve listing in status: " + currentStatus);
         }
     }

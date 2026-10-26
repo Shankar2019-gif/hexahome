@@ -172,6 +172,56 @@ public class AdminListingModerationService implements AdminListingModerationUseC
 
     @Override
     @Transactional
+    public boolean toggleVerified(UUID propertyId, UUID adminId, String ipAddress) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with ID: " + propertyId));
+
+        boolean previousState = property.isVerified();
+        boolean newState = !previousState;
+
+        property.setVerified(newState);
+        propertyRepository.save(property);
+
+        auditLogPort.recordAction(
+                adminId,
+                "TOGGLE_VERIFIED",
+                "Property",
+                propertyId.toString(),
+                String.valueOf(previousState),
+                String.valueOf(newState),
+                "Property genuine/verified status set to " + newState,
+                ipAddress,
+                "SUCCESS"
+        );
+        log.info("Listing genuine/verified toggled: propertyId={} newState={} by adminId={}", propertyId, newState, adminId);
+        return newState;
+    }
+
+    @Override
+    @Transactional
+    public void deleteListing(UUID propertyId, UUID adminId, String ipAddress) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with ID: " + propertyId));
+
+        String previousStatus = property.getStatus();
+        propertyRepository.delete(property);
+
+        auditLogPort.recordAction(
+                adminId,
+                "DELETE_LISTING",
+                "Property",
+                propertyId.toString(),
+                previousStatus,
+                "DELETED",
+                "Listing permanently removed by admin",
+                ipAddress,
+                "SUCCESS"
+        );
+        log.info("Listing permanently deleted: propertyId={} by adminId={}", propertyId, adminId);
+    }
+
+    @Override
+    @Transactional
     public BulkListingActionResultDto executeBulkAction(BulkListingActionRequest request, UUID adminId, String ipAddress) {
         ListingModerationPolicy.validateBulkAction(request.getPropertyIds(), request.getAction(), request.getReason());
 

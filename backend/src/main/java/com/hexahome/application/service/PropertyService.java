@@ -279,7 +279,17 @@ public class PropertyService implements com.hexahome.application.port.in.Propert
             String slug = request.getCity().trim().toLowerCase().replace(" ", "-");
             return cityRepository.findBySlug(slug)
                     .or(() -> cityRepository.findByNameIgnoreCase(request.getCity().trim()))
-                    .orElseThrow(() -> new ResourceNotFoundException("City", "name", request.getCity()));
+                    .orElseGet(() -> {
+                        City newCity = new City();
+                        newCity.setName(request.getCity().trim());
+                        newCity.setSlug(slug);
+                        newCity.setState("India");
+                        newCity.setActive(true);
+                        newCity.setDisplayOrder(99);
+                        newCity.setLatitude(BigDecimal.valueOf(20.5937));
+                        newCity.setLongitude(BigDecimal.valueOf(78.9629));
+                        return cityRepository.save(newCity);
+                    });
         }
         throw new BadRequestException("City ID or city name is required");
     }

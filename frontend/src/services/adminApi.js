@@ -74,6 +74,14 @@ export const adminPropertyApi = {
     return adminApiClient.post(`/properties/${id}/toggle-hot-deal`);
   },
 
+  toggleVerified: async (id) => {
+    return adminApiClient.post(`/properties/${id}/toggle-verified`);
+  },
+
+  deleteListing: async (id) => {
+    return adminApiClient.delete(`/properties/${id}`);
+  },
+
   bulkAction: async (action, propertyIds, reason = '') => {
     return adminApiClient.post('/properties/bulk-action', {
       action,

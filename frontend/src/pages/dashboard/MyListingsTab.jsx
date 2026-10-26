@@ -17,6 +17,7 @@ import {
   Edit2,
 } from 'lucide-react';
 import { propertyApi } from '../../services/api';
+import { resolveImageUrl, handleImageError, DEFAULT_PROPERTY_IMAGE } from '../../utils/imageUrl';
 
 export default function MyListingsTab({ onNavigate }) {
   const [properties, setProperties] = useState([]);
@@ -254,14 +255,15 @@ export default function MyListingsTab({ onNavigate }) {
         <div className="listings-grid">
           {properties.map((property) => {
             const propId = property.id || property.uuid;
-            const cover = property.coverImageUrl || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80';
+            const rawCover = property.coverImageUrl || property.images?.[0]?.imageUrl || (typeof property.images?.[0] === 'string' ? property.images[0] : null) || property.imageUrls?.[0] || DEFAULT_PROPERTY_IMAGE;
+            const cover = resolveImageUrl(rawCover);
             const status = property.status || 'ACTIVE';
             const isSoldOrRented = status === 'RENTED' || status === 'SOLD';
 
             return (
               <div key={propId} className="listing-card">
                 <div className="listing-thumb-wrap">
-                  <img src={cover} alt={property.title} className="listing-thumb-img" />
+                  <img src={cover} alt={property.title} className="listing-thumb-img" onError={handleImageError} />
                   <div className="listing-status-wrap">
                     {renderStatusBadge(status)}
                   </div>

@@ -15,6 +15,14 @@ const SIDEBAR_BENEFITS = [
 ];
 
 export default function AuthPage({ currentPath, onNavigate, onLoginSuccess }) {
+  const getRedirectUrl = () => {
+    try {
+      const search = window.location.search || (window.location.href.includes("?") ? "?" + window.location.href.split("?")[1] : "");
+      return new URLSearchParams(search).get("redirect") || "/";
+    } catch {
+      return "/";
+    }
+  };
   const [authMode, setAuthMode] = useState(() => {
     try {
       const search = window.location.search || (window.location.href.includes('?') ? '?' + window.location.href.split('?')[1] : '');
@@ -103,7 +111,8 @@ export default function AuthPage({ currentPath, onNavigate, onLoginSuccess }) {
       setSuccessMsg(`Welcome back, ${user.name || user.firstName || 'User'}! Logging you in...`);
       if (onLoginSuccess) onLoginSuccess(user);
       setTimeout(() => {
-        if (onNavigate) onNavigate('/');
+        const dest = getRedirectUrl();
+        if (onNavigate) onNavigate(dest);
       }, 700);
     } catch (err) {
       setErrorMsg(err.message || 'Login failed. Please verify your credentials or create an account.');
@@ -148,7 +157,8 @@ export default function AuthPage({ currentPath, onNavigate, onLoginSuccess }) {
       setSuccessMsg(`Welcome to HexaHome, ${fullName}! Your account has been created.`);
       if (onLoginSuccess) onLoginSuccess(res.user);
       setTimeout(() => {
-        if (onNavigate) onNavigate('/');
+        const dest = getRedirectUrl();
+        if (onNavigate) onNavigate(dest);
       }, 800);
     } catch (err) {
       setErrorMsg(err.message || 'Failed to complete registration. Please try again.');

@@ -2,6 +2,20 @@ import apiClient from './apiClient';
 import { RENT_PROPERTIES } from '../data/hexahomeData';
 
 /**
+ * Reads user-submitted properties from local storage cache/drafts
+ */
+function getLocalUserProperties() {
+  try {
+    const raw = localStorage.getItem('hexahome_user_properties');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Property Service for Consumer Property Search & Catalog.
  * Connects frontend search & filters to backend Spring Boot endpoints
  * with fallback support to local seed properties when offline.
@@ -13,12 +27,14 @@ export const propertyService = {
    * @returns {Promise<{ content: Array, totalElements: number, totalPages: number, number: number, size: number }>}
    */
   async searchProperties(filters = {}) {
+    const localListings = getLocalUserProperties();
+
     try {
       const params = {};
 
       if (filters.city) params.city = filters.city;
       if (filters.locality) params.locality = filters.locality;
-      if (filters.q) params.q = filters.q;
+      if (filters.q || filters.query) params.q = filters.q || filters.query;
 
       // Category mapping: Rent -> RENT, Buy -> BUY, PG -> PG, Commercial -> COMMERCIAL
       if (filters.category || filters.adType) {
@@ -62,21 +78,42 @@ export const propertyService = {
       
       // Response unwrapping (apiClient response interceptor or Spring ApiResponse)
       const data = response?.data || response;
+      let content = [];
+      let total = 0;
+      let totalPages = 1;
+
       if (data && Array.isArray(data.content)) {
-        return data;
+        content = [...data.content];
+        total = data.totalElements || data.content.length;
+        totalPages = data.totalPages || 1;
+      } else if (Array.isArray(data)) {
+        content = [...data];
+        total = data.length;
+        totalPages = Math.ceil(data.length / params.size) || 1;
       }
-      if (Array.isArray(data)) {
-        return {
-          content: data,
-          totalElements: data.length,
-          totalPages: Math.ceil(data.length / params.size),
-          number: params.page,
-          size: params.size,
-        };
+
+      // Merge local user-uploaded properties that aren't already in content
+      if (localListings.length > 0) {
+        localListings.forEach((localProp) => {
+          const alreadyExists = content.some(
+            (p) => p.id === localProp.id || (p.slug && p.slug === localProp.slug)
+          );
+          if (!alreadyExists) {
+            content.unshift(localProp);
+            total += 1;
+          }
+        });
       }
-      return data;
+
+      return {
+        content,
+        totalElements: total,
+        totalPages,
+        number: params.page,
+        size: params.size,
+      };
     } catch (error) {
-      console.warn('[propertyService.searchProperties] Backend API error, using fallback seed catalog:', error.message);
+      console.warn('[propertyService.searchProperties] Backend API error, using fallback catalog:', error.message);
       return this.getFallbackSearchResults(filters);
     }
   },
@@ -89,11 +126,33 @@ export const propertyService = {
       const response = await apiClient.get(`/properties/${slugOrId}`);
       return response?.data || response;
     } catch (error) {
-      console.warn('[propertyService.getPropertyDetail] Error fetching property:', error.message);
+      console.warn('[propertyService.getPropertyDetail] Backend fetch error, checking local store:', error.message);
+      
+      // 1. Check user-submitted local properties in localStorage
+      const localListings = getLocalUserProperties();
+      const localMatch = localListings.find(
+        (p) =>
+          p.id === slugOrId ||
+          p.uuid === slugOrId ||
+          p.slug === slugOrId ||
+          (p.title && p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slugOrId)
+      );
+      if (localMatch) {
+        return {
+          ...localMatch,
+          images: localMatch.images || (localMatch.imageUrls ? localMatch.imageUrls.map((url, idx) => ({ id: `img-${idx}`, imageUrl: url, thumbnailUrl: url, isCover: idx === 0 })) : []),
+        };
+      }
+
+      // 2. Check catalog seed properties
       const match = RENT_PROPERTIES.find(
-        (p) => p.id === slugOrId || p.slug === slugOrId || p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slugOrId
+        (p) =>
+          p.id === slugOrId ||
+          p.slug === slugOrId ||
+          (p.title && p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slugOrId)
       );
       if (match) return match;
+
       throw error;
     }
   },
@@ -107,7 +166,6 @@ export const propertyService = {
       const response = await apiClient.post(`/properties/${propertyId}/reveal-contact`);
       return response?.data || response;
     } catch (error) {
-      // Re-throw so caller can distinguish 402 QuotaExhausted vs 401 Unauthorized
       throw error;
     }
   },
@@ -116,21 +174,41 @@ export const propertyService = {
    * Client-side fallback search when backend returns 0 listings or is offline
    */
   getFallbackSearchResults(filters = {}) {
-    let results = [...RENT_PROPERTIES];
+    const localListings = getLocalUserProperties();
+    let results = [...localListings, ...RENT_PROPERTIES];
 
     if (filters.city) {
-      const c = filters.city.toLowerCase();
-      results = results.filter((p) => (p.location || '').toLowerCase().includes(c));
+      const c = filters.city.toLowerCase().trim();
+      results = results.filter((p) =>
+        (p.cityName || p.city || p.location || '').toLowerCase().includes(c)
+      );
     }
 
     if (filters.locality) {
-      const loc = filters.locality.toLowerCase();
-      results = results.filter((p) => (p.location || '').toLowerCase().includes(loc) || (p.title || '').toLowerCase().includes(loc));
+      const loc = filters.locality.toLowerCase().trim();
+      results = results.filter((p) =>
+        (p.localityName || p.locality || p.location || '').toLowerCase().includes(loc) ||
+        (p.title || '').toLowerCase().includes(loc) ||
+        (p.address || '').toLowerCase().includes(loc)
+      );
+    }
+
+    if (filters.q || filters.query) {
+      const q = (filters.q || filters.query).toLowerCase().trim();
+      results = results.filter((p) =>
+        (p.title || '').toLowerCase().includes(q) ||
+        (p.location || '').toLowerCase().includes(q) ||
+        (p.address || '').toLowerCase().includes(q) ||
+        (p.bhk || p.type || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q)
+      );
     }
 
     if (filters.bhk && filters.bhk.length > 0) {
       const selectedBhks = Array.isArray(filters.bhk) ? filters.bhk : [filters.bhk];
-      results = results.filter((p) => selectedBhks.some((b) => (p.type || '').includes(b) || (p.bhk || '').includes(b)));
+      results = results.filter((p) =>
+        selectedBhks.some((b) => (p.type || '').includes(b) || (p.bhk || '').includes(b))
+      );
     }
 
     if (filters.minPrice) {
@@ -146,11 +224,11 @@ export const propertyService = {
     }
 
     if (filters.verifiedOnly) {
-      results = results.filter((p) => p.verified);
+      results = results.filter((p) => p.verified || p.isVerified);
     }
 
     if (filters.zeroBrokerageOnly) {
-      results = results.filter((p) => p.zeroBrokerage || p.tag?.includes('Zero Brokerage'));
+      results = results.filter((p) => p.zeroBrokerage || p.isZeroBrokerage || p.tag?.includes('Zero Brokerage'));
     }
 
     // Sorting

@@ -61,6 +61,10 @@ export default function PostPropertyPage({ onNavigate, currentUser, onLogout }) 
 
   const handleStartListing = (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      if (onNavigate) onNavigate("/auth?redirect=/post-property");
+      return;
+    }
     openWizard();
   };
 
@@ -131,6 +135,32 @@ export default function PostPropertyPage({ onNavigate, currentUser, onLogout }) 
           </div>
 
           <div className="post-hero-right-card">
+            {!currentUser ? (
+              <div style={{ textAlign: "center", padding: "2rem 1.5rem" }}>
+                <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "#eff6ff", color: "#033487", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.25rem", border: "1px solid #bfdbfe" }}>
+                  <ShieldCheck size={36} />
+                </div>
+                <h2 style={{ fontSize: "1.35rem", fontWeight: "700", color: "#0f172a", marginBottom: "0.6rem" }}>
+                  Login Required to Post Property
+                </h2>
+                <p style={{ fontSize: "0.9rem", color: "#64748b", lineHeight: "1.5", marginBottom: "1.75rem" }}>
+                  To ensure 100% verified, genuine listings and connect directly with tenants without brokerage, please log in or create your free account before posting.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate && onNavigate("/auth?redirect=/post-property")}
+                  className="post-cta-btn"
+                  style={{ width: "100%", justifyContent: "center" }}
+                >
+                  <span>Sign In / Register to Continue</span>
+                  <ArrowRight size={18} />
+                </button>
+                <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#94a3b8" }}>
+                  Quick mobile OTP / Password login • Free listing forever
+                </div>
+              </div>
+            ) : (
+              <>
             <h2 className="post-card-title">Looking to Post Your Ad?</h2>
             <p className="post-card-sub">Enter your details and we’ll help you list your property</p>
 
@@ -214,6 +244,8 @@ export default function PostPropertyPage({ onNavigate, currentUser, onLogout }) 
                 <ArrowRight size={18} />
               </button>
             </form>
+              </>
+            )}
           </div>
         </div>
       </section>
